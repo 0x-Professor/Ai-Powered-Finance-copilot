@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 // Font Awesome
@@ -11,7 +11,12 @@ export const metadata: Metadata = {
   description: "Get personalized financial advice, track your spending, and achieve your financial goals with AI-powered insights.",
   keywords: "finance, AI, personal finance, budgeting, savings, investment",
   authors: [{ name: "FinanceAI Team" }],
-  viewport: "width=device-width, initial-scale=1",
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#0ea5e9',
 };
 
 export default function RootLayout({
