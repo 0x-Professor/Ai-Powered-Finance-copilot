@@ -6,7 +6,7 @@ import {
   faRocket, faBullseye, faBrain, faUniversity, 
   faShieldAlt, faCar, faHome, faChartLine,
   faArrowLeft, faArrowRight, faLightbulb, faCalendarAlt,
-  faClock, faTachometerAlt
+  faClock, faTachometerAlt, faCheckCircle, faSpinner
 } from '@fortawesome/free-solid-svg-icons';
 import { generateFinancialAnalysis, FinancialData } from '../utils/geminiApi';
 
@@ -30,37 +30,36 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
 
-  // Connect bank step
+  // Connect bank step with enhanced animation
   const connectBankStep = () => {
     setIsConnecting(true);
     
-    // Simulate Plaid connection
     setTimeout(() => {
       setIsConnected(true);
       
       setTimeout(() => {
         setCurrentStep(2);
-      }, 1500);
-    }, 2000);
+      }, 2000);
+    }, 3000);
   };
   
-  // Select goal type
+  // Select goal type with enhanced feedback
   const selectGoal = (goalType: 'car' | 'house' | 'emergency') => {
     const goalDescriptions = {
-      'car': 'Save $10k for a car',
-      'house': 'Save $50k for house down payment',
-      'emergency': 'Build $5k emergency fund'
+      'car': 'Save for a new car',
+      'house': 'Save for house down payment',
+      'emergency': 'Build emergency fund'
     };
     
     const goalAmounts = {
-      'car': 10000,
+      'car': 25000,
       'house': 50000,
-      'emergency': 5000
+      'emergency': 10000
     };
     
-    // Set default date (1 year from now)
+    // Set default date (18 months from now for more realistic timeline)
     const futureDate = new Date();
-    futureDate.setFullYear(futureDate.getFullYear() + 1);
+    futureDate.setMonth(futureDate.getMonth() + 18);
     
     setUserGoal({
       description: goalDescriptions[goalType],
@@ -69,13 +68,17 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
     });
   };
   
-  // Analyze goal
+  // Enhanced goal analysis
   const analyzeGoal = async () => {
+    if (!userGoal.description || !userGoal.amount || !userGoal.date) {
+      alert('Please fill in all goal details before proceeding.');
+      return;
+    }
+
     setIsAnalyzing(true);
     setCurrentStep(3);
     
     try {
-      // Define current spending data
       const financialData: FinancialData = {
         income: 5200,
         expenses: {
@@ -94,7 +97,6 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
         }
       };
       
-      // Call Gemini API through our utility function
       const aiText = await generateFinancialAnalysis(
         financialData,
         userGoal.description,
@@ -102,206 +104,278 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
         userGoal.date
       );
       
-      // Set the AI analysis
       setAiAnalysis(aiText);
     } catch (error) {
       console.error('Error calling Gemini API:', error);
       
-      // Fallback to static analysis if API fails
+      // Enhanced fallback analysis
+      const monthsToGoal = Math.ceil((new Date(userGoal.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 30));
+      const monthlyTarget = Math.ceil(userGoal.amount / monthsToGoal);
+      
       setAiAnalysis(
-        `## Goal Analysis: ${userGoal.description}\n\n` +
-        `Based on your current spending patterns, this goal is **achievable** by ${userGoal.date}.\n\n` +
-        `### Budget Adjustments Needed:\n` +
-        `- Reduce dining expenses by $200/month\n` +
-        `- Cut entertainment by $100/month\n` +
-        `- Optimize transportation costs by $50/month\n\n` +
-        `### Monthly Savings Target:\n` +
-        `You need to save $${Math.round(userGoal.amount / 12)} per month to reach your goal.\n\n` +
-        `### Potential Obstacles:\n` +
-        `- Unexpected expenses\n` +
-        `- Seasonal spending increases\n\n` +
-        `### Recommended Actions:\n` +
-        `1. Set up automatic transfers to savings\n` +
-        `2. Track spending weekly\n` +
-        `3. Review subscriptions and cancel unused ones`
+        `## 🎯 Goal Analysis: ${userGoal.description}\n\n` +
+        `**Target Amount:** $${userGoal.amount.toLocaleString()}\n` +
+        `**Timeline:** ${monthsToGoal} months\n` +
+        `**Monthly Savings Needed:** $${monthlyTarget.toLocaleString()}\n\n` +
+        `### 💡 Achievability Assessment\n` +
+        `Your goal is **${monthlyTarget <= 1000 ? 'highly achievable' : monthlyTarget <= 1500 ? 'challenging but doable' : 'ambitious'}** with your current income.\n\n` +
+        `### 📊 Recommended Strategy\n` +
+        `• Set up automatic transfers of $${monthlyTarget} monthly\n` +
+        `• Reduce dining expenses by $200/month\n` +
+        `• Consider a high-yield savings account (2.5% APY)\n` +
+        `• Track progress weekly to stay motivated\n\n` +
+        `### 🚀 Quick Wins\n` +
+        `• Cancel unused subscriptions (save ~$50/month)\n` +
+        `• Meal prep on Sundays (save ~$150/month)\n` +
+        `• Use cashback apps for purchases\n\n` +
+        `**Success Probability:** ${monthlyTarget <= 1000 ? '95%' : monthlyTarget <= 1500 ? '80%' : '65%'}`
       );
     } finally {
       setIsAnalyzing(false);
     }
   };
   
-  // Start dashboard
   const startDashboard = () => {
     onDashboardLaunch(userGoal);
   };
 
-  return (
-    <div className="space-y-8">
-      {/* Step 1: Welcome & Bank Connection */}
-      <div id="step1" className={`bg-white rounded-xl shadow-lg p-8 card-hover ${currentStep !== 1 ? 'hidden' : ''}`}>
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <FontAwesomeIcon icon={faRocket} className="text-white text-3xl" />
+  // Progress indicator
+  const ProgressIndicator = () => (
+    <div className="flex justify-center mb-8">
+      <div className="flex items-center space-x-4">
+        {[1, 2, 3].map((step) => (
+          <div key={step} className="flex items-center">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-300 ${
+              currentStep >= step 
+                ? 'bg-primary-600 text-white shadow-lg' 
+                : 'bg-gray-200 text-gray-500'
+            }`}>
+              {currentStep > step ? (
+                <FontAwesomeIcon icon={faCheckCircle} />
+              ) : (
+                step
+              )}
+            </div>
+            {step < 3 && (
+              <div className={`w-16 h-1 mx-2 rounded-full transition-all duration-300 ${
+                currentStep > step ? 'bg-primary-600' : 'bg-gray-200'
+              }`} />
+            )}
           </div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome to FinanceAI Co-Pilot!</h2>
-          <p className="text-gray-600">Let's get your finances on autopilot. First, connect your bank account securely.</p>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-8 max-w-4xl mx-auto">
+      <ProgressIndicator />
+      
+      {/* Step 1: Welcome & Bank Connection */}
+      <div className={`card fade-in-up ${currentStep !== 1 ? 'hidden' : ''}`}>
+        <div className="text-center mb-8">
+          <div className="w-24 h-24 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl animate-pulse">
+            <FontAwesomeIcon icon={faRocket} className="text-white text-4xl" />
+          </div>
+          <h2 className="text-4xl font-bold text-gray-800 mb-4">Welcome to FinanceAI Co-Pilot!</h2>
+          <p className="text-xl text-gray-600 mb-2">Your AI-powered financial assistant</p>
+          <p className="text-gray-500">Let's connect your bank account securely to get started.</p>
         </div>
         
         <div className="max-w-md mx-auto">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 shadow-sm">
+          <div className="bg-gradient-to-r from-blue-50 to-primary-50 border border-blue-200 rounded-xl p-6 mb-8 shadow-sm">
             <div className="flex items-center">
-              <FontAwesomeIcon icon={faShieldAlt} className="text-blue-500 mr-3" />
+              <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mr-4">
+                <FontAwesomeIcon icon={faShieldAlt} className="text-white text-xl" />
+              </div>
               <div>
-                <p className="font-semibold text-blue-800">Bank-Level Security</p>
-                <p className="text-blue-600 text-sm">Powered by Plaid - used by 11,000+ apps</p>
+                <p className="font-bold text-blue-800 text-lg">Bank-Level Security</p>
+                <p className="text-blue-600">Powered by Plaid - used by 11,000+ apps</p>
+                <div className="flex items-center mt-2 text-sm text-blue-500">
+                  <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
+                  <span>256-bit encryption</span>
+                  <span className="mx-2">•</span>
+                  <span>Read-only access</span>
+                </div>
               </div>
             </div>
           </div>
           
           <button 
             onClick={connectBankStep} 
-            disabled={isConnecting}
-            className={`w-full btn ${isConnected ? 'btn-success' : 'btn-primary'} transition-all duration-300 transform hover:scale-105`}
+            disabled={isConnecting || isConnected}
+            className={`w-full btn btn-lg transition-all duration-500 ${
+              isConnected 
+                ? 'btn-success' 
+                : isConnecting 
+                  ? 'btn-primary opacity-75 cursor-not-allowed' 
+                  : 'btn-primary hover:scale-105'
+            }`}
           >
             {isConnecting ? (
               <>
-                <FontAwesomeIcon icon={faUniversity} className="mr-2" spin />
-                Connecting...
+                <FontAwesomeIcon icon={faSpinner} className="mr-3" spin />
+                Connecting securely...
               </>
             ) : isConnected ? (
               <>
-                <FontAwesomeIcon icon={faUniversity} className="mr-2" />
+                <FontAwesomeIcon icon={faCheckCircle} className="mr-3" />
                 Connected Successfully!
               </>
             ) : (
               <>
-                <FontAwesomeIcon icon={faUniversity} className="mr-2" />
+                <FontAwesomeIcon icon={faUniversity} className="mr-3" />
                 Connect Bank Account
               </>
             )}
           </button>
-          
-          <div className="mt-4 text-center">
-            <p className="text-gray-500 text-sm">🔒 256-bit encryption • Read-only access • FDIC protected</p>
-          </div>
         </div>
       </div>
 
-      {/* Step 2: Goal Setting */}
-      <div id="step2" className={`bg-white rounded-xl shadow-lg p-8 card-hover ${currentStep !== 2 ? 'hidden' : ''}`}>
+      {/* Step 2: Enhanced Goal Setting */}
+      <div className={`card fade-in-up ${currentStep !== 2 ? 'hidden' : ''}`}>
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
-            <FontAwesomeIcon icon={faBullseye} className="text-white text-3xl" />
+          <div className="w-24 h-24 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
+            <FontAwesomeIcon icon={faBullseye} className="text-white text-4xl" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">What's Your Financial Goal?</h2>
-          <p className="text-gray-600">Tell us what you're saving for, and we'll create a personalized plan.</p>
+          <h2 className="text-4xl font-bold text-gray-800 mb-4">What's Your Financial Goal?</h2>
+          <p className="text-xl text-gray-600">Choose your primary savings objective and we'll create a personalized plan.</p>
         </div>
         
-        <div className="max-w-2xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <button 
               onClick={() => selectGoal('car')} 
-              className={`goal-option p-4 border-2 ${userGoal.description === 'Save $10k for a car' ? 'border-secondary-400 bg-secondary-50' : 'border-gray-200'} rounded-lg hover:border-secondary-400 transition-colors`}
+              className={`goal-option p-6 border-2 rounded-xl transition-all duration-300 ${
+                userGoal.description === 'Save for a new car' 
+                  ? 'border-secondary-400 bg-gradient-to-br from-secondary-50 to-primary-50 shadow-lg scale-105' 
+                  : 'border-gray-200 hover:border-secondary-300 hover:shadow-md'
+              }`}
             >
-              <FontAwesomeIcon icon={faCar} className="text-3xl text-secondary-500 mb-2" />
-              <p className="font-semibold">New Car</p>
+              <FontAwesomeIcon icon={faCar} className="text-4xl text-secondary-500 mb-4" />
+              <p className="font-bold text-lg mb-2">New Car</p>
+              <p className="text-gray-600 text-sm">Save $25,000 for your dream car</p>
             </button>
+            
             <button 
               onClick={() => selectGoal('house')} 
-              className={`goal-option p-4 border-2 ${userGoal.description === 'Save $50k for house down payment' ? 'border-secondary-400 bg-secondary-50' : 'border-gray-200'} rounded-lg hover:border-secondary-400 transition-colors`}
+              className={`goal-option p-6 border-2 rounded-xl transition-all duration-300 ${
+                userGoal.description === 'Save for house down payment' 
+                  ? 'border-secondary-400 bg-gradient-to-br from-secondary-50 to-primary-50 shadow-lg scale-105' 
+                  : 'border-gray-200 hover:border-secondary-300 hover:shadow-md'
+              }`}
             >
-              <FontAwesomeIcon icon={faHome} className="text-3xl text-secondary-500 mb-2" />
-              <p className="font-semibold">House Down Payment</p>
+              <FontAwesomeIcon icon={faHome} className="text-4xl text-secondary-500 mb-4" />
+              <p className="font-bold text-lg mb-2">House Down Payment</p>
+              <p className="text-gray-600 text-sm">Save $50,000 for your home</p>
             </button>
+            
             <button 
               onClick={() => selectGoal('emergency')} 
-              className={`goal-option p-4 border-2 ${userGoal.description === 'Build $5k emergency fund' ? 'border-secondary-400 bg-secondary-50' : 'border-gray-200'} rounded-lg hover:border-secondary-400 transition-colors`}
+              className={`goal-option p-6 border-2 rounded-xl transition-all duration-300 ${
+                userGoal.description === 'Build emergency fund' 
+                  ? 'border-secondary-400 bg-gradient-to-br from-secondary-50 to-primary-50 shadow-lg scale-105' 
+                  : 'border-gray-200 hover:border-secondary-300 hover:shadow-md'
+              }`}
             >
-              <FontAwesomeIcon icon={faShieldAlt} className="text-3xl text-secondary-500 mb-2" />
-              <p className="font-semibold">Emergency Fund</p>
+              <FontAwesomeIcon icon={faShieldAlt} className="text-4xl text-secondary-500 mb-4" />
+              <p className="font-bold text-lg mb-2">Emergency Fund</p>
+              <p className="text-gray-600 text-sm">Build $10,000 safety net</p>
             </button>
           </div>
           
-          <div className="space-y-4">
+          <div className="bg-gray-50 rounded-xl p-6 space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Goal Description</label>
+              <label className="block text-sm font-bold text-gray-700 mb-3">Goal Description</label>
               <input 
                 type="text" 
                 value={userGoal.description} 
                 onChange={(e) => setUserGoal({...userGoal, description: e.target.value})}
-                placeholder="e.g., Save $10k for a car" 
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500"
+                placeholder="e.g., Save for a new Tesla Model 3" 
+                className="input w-full text-lg"
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Target Amount</label>
+                <label className="block text-sm font-bold text-gray-700 mb-3">Target Amount ($)</label>
                 <input 
                   type="number" 
                   value={userGoal.amount || ''} 
                   onChange={(e) => setUserGoal({...userGoal, amount: Number(e.target.value)})}
-                  placeholder="10000" 
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500"
+                  placeholder="25000" 
+                  className="input w-full text-lg"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Target Date</label>
+                <label className="block text-sm font-bold text-gray-700 mb-3">Target Date</label>
                 <input 
                   type="date" 
                   value={userGoal.date} 
                   onChange={(e) => setUserGoal({...userGoal, date: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500"
+                  className="input w-full text-lg"
                 />
               </div>
             </div>
+            
             <button 
               onClick={analyzeGoal} 
               disabled={!userGoal.description || !userGoal.amount || !userGoal.date}
-              className="w-full bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full btn btn-lg btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <FontAwesomeIcon icon={faChartLine} className="mr-2" />
-              Analyze My Goal
+              <FontAwesomeIcon icon={faChartLine} className="mr-3" />
+              Analyze My Goal with AI
             </button>
           </div>
         </div>
       </div>
 
-      {/* Step 3: AI Analysis & Plan */}
-      <div id="step3" className={`bg-white rounded-xl shadow-lg p-8 card-hover ${currentStep !== 3 ? 'hidden' : ''}`}>
+      {/* Step 3: Enhanced AI Analysis */}
+      <div className={`card fade-in-up ${currentStep !== 3 ? 'hidden' : ''}`}>
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
-            <FontAwesomeIcon icon={faBrain} className="text-white text-3xl" />
+          <div className="w-24 h-24 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
+            <FontAwesomeIcon icon={faBrain} className="text-white text-4xl" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">AI Analysis Complete!</h2>
-          <p className="text-gray-600">Here's your personalized savings plan based on your spending patterns.</p>
+          <h2 className="text-4xl font-bold text-gray-800 mb-4">AI Analysis Complete!</h2>
+          <p className="text-xl text-gray-600">Here's your personalized financial roadmap</p>
         </div>
         
-        <div id="aiAnalysis" className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {isAnalyzing ? (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 mx-auto mb-4">
-                <FontAwesomeIcon icon={faBrain} className="text-secondary-500 text-4xl pulse-animation" />
+            <div className="text-center py-12 bg-gradient-to-br from-primary-50 to-secondary-50 rounded-xl">
+              <div className="w-20 h-20 mx-auto mb-6">
+                <FontAwesomeIcon icon={faBrain} className="text-primary-500 text-5xl animate-pulse" />
               </div>
-              <p className="text-gray-600">Analyzing your financial data...</p>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Analyzing Your Financial Data</h3>
+              <p className="text-gray-600 mb-6">Our AI is crunching the numbers to create your perfect plan...</p>
+              <div className="flex justify-center space-x-1">
+                <div className="w-3 h-3 bg-primary-500 rounded-full animate-bounce"></div>
+                <div className="w-3 h-3 bg-secondary-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                <div className="w-3 h-3 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              </div>
             </div>
           ) : aiAnalysis ? (
-            <div className="prose prose-lg max-w-none">
-              <div className="whitespace-pre-wrap">
-                {aiAnalysis}
+            <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-8 shadow-inner">
+              <div className="prose prose-lg max-w-none">
+                <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+                  {aiAnalysis}
+                </div>
               </div>
             </div>
           ) : null}
         </div>
         
-        <div className="text-center mt-8">
-          <button 
-            onClick={startDashboard} 
-            className="btn btn-primary btn-lg transition-all duration-300"
-          >
-            <FontAwesomeIcon icon={faRocket} className="mr-2" />
-            Launch My Dashboard
-          </button>
-        </div>
+        {!isAnalyzing && (
+          <div className="text-center mt-10">
+            <button 
+              onClick={startDashboard} 
+              className="btn btn-primary btn-lg shadow-xl hover:shadow-2xl"
+            >
+              <FontAwesomeIcon icon={faRocket} className="mr-3" />
+              Launch My Personalized Dashboard
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
