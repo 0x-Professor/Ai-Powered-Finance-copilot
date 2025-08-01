@@ -3,10 +3,141 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Financial data
+  profile   UserProfile?
+  accounts  Account[]
+  goals     Goal[]
+  expenses  Expense[]
+  budgets   Budget[]
+  challenges Challenge[]
+  
+  @@map("users")
+}
+
+model UserProfile {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  monthlyIncome Float
+  riskProfile  String  @default("Moderate") // Conservative, Moderate, Aggressive
+  occupation   String?
+  age          Int?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_profiles")
+}
+
+model Account {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  type        String   // checking, savings, investment, credit
+  balance     Float
+  institution String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("accounts")
+}
+
+model Goal {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  targetAmount Float
+  currentAmount Float   @default(0)
+  targetDate  DateTime
+  category    String   // emergency, car, house, vacation, etc.
+  priority    String   @default("Medium") // High, Medium, Low
+  status      String   @default("Active") // Active, Completed, Paused
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("goals")
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Float
+  category    String   // dining, transport, shopping, entertainment, bills, other
+  description String?
+  date        DateTime @default(now())
+  recurring   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("expenses")
+}
+
+model Budget {
+  id         String   @id @default(cuid())
+  userId     String
+  category   String
+  amount     Float
+  period     String   @default("monthly") // monthly, weekly, yearly
+  spent      Float    @default(0)
+  month      Int
+  year       Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, category, month, year])
+  @@map("budgets")
+}
+
+model Challenge {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String
+  targetAmount Float?
+  currentAmount Float   @default(0)
+  targetDays  Int
+  currentDays Int      @default(0)
+  category    String   // coffee, dining, transport, etc.
+  points      Int      @default(0)
+  status      String   @default("Active") // Active, Completed, Failed
+  startDate   DateTime @default(now())
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("challenges")
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  amount      Float
+  category    String
+  description String?
+  type        String   // income, expense
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  
+  @@map("transactions")
 }
