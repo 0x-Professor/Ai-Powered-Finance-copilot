@@ -27,10 +27,11 @@ export default function Home() {
   // Function to handle voice toggle from header
   const handleVoiceToggle = () => {
     if (showDashboard && dashboardRef.current) {
-      // Call startListening or stopListening on the Dashboard component
-      if (dashboardRef.current.startListening) {
-        dashboardRef.current.startListening();
-      }
+      // Call startListening method on the Dashboard component
+      dashboardRef.current.startListening();
+    } else {
+      // If dashboard is not shown yet, show a notification or handle appropriately
+      alert('Please complete the onboarding process to use voice features.');
     }
   };
 

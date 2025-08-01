@@ -154,10 +154,11 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
     }
   };
 
+  // State for voice listening status
+  const [isListening, setIsListening] = useState(false);
+  
   // Voice interaction functions
   const startListening = async () => {
-    const [isListening, setIsListening] = useState(false);
-    
     // Toggle listening state
     if (isListening) {
       setIsListening(false);
