@@ -156,6 +156,16 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
 
   // Voice interaction functions
   const startListening = async () => {
+    const [isListening, setIsListening] = useState(false);
+    
+    // Toggle listening state
+    if (isListening) {
+      setIsListening(false);
+      setAiResponse('Listening stopped.');
+      return;
+    }
+    
+    setIsListening(true);
     setShowAiPanel(true);
     setIsLoading(true);
     
@@ -275,9 +285,11 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
           </div>
         `);
       }
+      setIsListening(false);
     } catch (error) {
       console.error('Error calling Gemini API:', error);
       setAiResponse('Sorry, I encountered an error while processing your voice query. Please try again later.');
+      setIsListening(false);
     } finally {
       setIsLoading(false);
     }
