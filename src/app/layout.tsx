@@ -26,7 +26,7 @@ export default function RootLayout({
       <head>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
       </head>
-      <body className={`${fontFallbackClass} bg-gray-50 min-h-screen`}>
+      <body className={`${fontFallbackClass} bg-white min-h-screen`}>
         {children}
       </body>
     </html>
