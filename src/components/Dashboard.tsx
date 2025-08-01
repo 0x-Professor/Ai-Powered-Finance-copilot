@@ -216,7 +216,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
               padding: 15,
               font: {
                 size: 11,
-                weight: '500'
+                weight: 500
               }
             }
           },
@@ -240,8 +240,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
           y: {
             beginAtZero: true,
             grid: {
-              color: 'rgba(156, 163, 175, 0.1)',
-              drawBorder: false
+              color: 'rgba(156, 163, 175, 0.1)'
             },
             ticks: {
               callback: function(value) {
@@ -419,7 +418,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
               padding: 15,
               font: {
                 size: 11,
-                weight: '500'
+                weight: 500
               }
             }
           },
@@ -441,8 +440,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
           y: {
             beginAtZero: true,
             grid: {
-              color: 'rgba(156, 163, 175, 0.1)',
-              drawBorder: false
+              color: 'rgba(156, 163, 175, 0.1)'
             },
             ticks: {
               callback: function(value) {
@@ -455,12 +453,13 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
           },
           x: {
             grid: {
-              color: 'rgba(156, 163, 175, 0.1)',
-              drawBorder: false
+              color: 'rgba(156, 163, 175, 0.1)'
             },
             ticks: {
+              color: 'rgb(156, 163, 175)',
               font: {
-                size: 10
+                size: 11,
+                weight: 500
               }
             }
           }
@@ -528,7 +527,10 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
             cornerRadius: 8,
             callbacks: {
               label: function(context) {
-                return `${context.label}: $${context.parsed.toFixed(2)}`;
+                const value = typeof context.parsed === 'number' ? context.parsed : 
+                             context.parsed && typeof context.parsed === 'object' ? 
+                             (context.parsed as { r?: number }).r || 0 : 0;
+                return `${context.label}: $${value.toFixed(2)}`;
               }
             }
           }
@@ -537,7 +539,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
           r: {
             beginAtZero: true,
             grid: {
-              color: 'rgba(156, 163, 175, 0.2)'
+              color: 'rgba(156, 163, 175, 0.1)'
             },
             ticks: {
               display: false
@@ -784,7 +786,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
             <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
               Welcome back, {dashboardData.name}!
             </h1>
-            <p className="text-purple-100 text-lg">Here's your financial overview for {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</p>
+            <p className="text-purple-100 text-lg">Here&apos;s your financial overview for {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</p>
           </div>
           <div className="flex items-center space-x-6">
             <button 
@@ -1088,7 +1090,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
               </div>
               <div>
                 <h4 className="font-semibold text-red-800 mb-2">Budget Alert</h4>
-                <p className="text-red-700 text-sm mb-3">You're 12% over your dining budget this month</p>
+                <p className="text-red-700 text-sm mb-3">You&apos;re 12% over your dining budget this month</p>
                 <button className="text-red-600 text-xs font-medium hover:text-red-800 transition-colors">
                   View Details →
                 </button>
@@ -1277,7 +1279,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
         </div>
         
         <div className="space-y-4">
-          {dashboardData.expenses.slice(0, 5).map((expense, index) => (
+          {dashboardData.expenses.slice(0, 5).map((expense) => (
             <div key={expense.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300">
               <div className="flex items-center space-x-4">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
