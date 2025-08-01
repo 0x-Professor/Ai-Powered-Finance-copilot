@@ -590,7 +590,7 @@ Dashboard.displayName = 'Dashboard';
           <div className="grid grid-cols-2 gap-4">
             <button 
               onClick={connectBank}
-              className="flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md">
+              className="flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md">
               <div className="w-12 h-12 rounded-full gradient-bg flex items-center justify-center mb-3 shadow-md">
                 <FontAwesomeIcon icon={faUniversity} className="text-white" />
               </div>
@@ -599,7 +599,7 @@ Dashboard.displayName = 'Dashboard';
             
             <button 
               onClick={setBudget}
-              className="flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md">
+              className="flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md">
               <div className="w-12 h-12 rounded-full gradient-success flex items-center justify-center mb-3 shadow-md">
                 <FontAwesomeIcon icon={faCalculator} className="text-white" />
               </div>
@@ -608,7 +608,7 @@ Dashboard.displayName = 'Dashboard';
             
             <button 
               onClick={investmentAdvice}
-              className="flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md">
+              className="flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md">
               <div className="w-12 h-12 rounded-full gradient-secondary flex items-center justify-center mb-3 shadow-md">
                 <FontAwesomeIcon icon={faChartPie} className="text-white" />
               </div>
@@ -617,7 +617,7 @@ Dashboard.displayName = 'Dashboard';
             
             <button 
               onClick={exportData}
-              className="flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md">
+              className="flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md">
               <div className="w-12 h-12 rounded-full gradient-warning flex items-center justify-center mb-3 shadow-md">
                 <FontAwesomeIcon icon={faDownload} className="text-white" />
               </div>
