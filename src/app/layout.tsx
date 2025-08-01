@@ -1,19 +1,17 @@
 import type { Metadata } from "next";
-// Using local system fonts instead of Google Fonts to avoid connectivity issues
-// import { Inter } from "next/font/google";
 import "./globals.css";
 
 // Font Awesome
 import { config } from '@fortawesome/fontawesome-svg-core';
 import '@fortawesome/fontawesome-svg-core/styles.css';
-config.autoAddCss = false; // Tell Font Awesome to skip adding CSS automatically since it's imported above
-
-// Define a CSS variable for font fallback instead of using Google Fonts
-const fontFallbackClass = 'font-sans'; // Using system font stack
+config.autoAddCss = false;
 
 export const metadata: Metadata = {
-  title: "FinanceAI Co-Pilot",
-  description: "AI-Powered Personal Finance Co-Pilot",
+  title: "FinanceAI Co-Pilot - AI-Powered Personal Finance Assistant",
+  description: "Get personalized financial advice, track your spending, and achieve your financial goals with AI-powered insights.",
+  keywords: "finance, AI, personal finance, budgeting, savings, investment",
+  authors: [{ name: "FinanceAI Team" }],
+  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({
@@ -22,12 +20,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="scroll-smooth">
       <head>
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link 
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" 
+          rel="stylesheet" 
+        />
+        <link 
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+          rel="stylesheet" 
+          crossOrigin="anonymous"
+        />
+        <meta name="theme-color" content="#0ea5e9" />
+        <link rel="icon" href="/favicon.ico" />
       </head>
-      <body className={`${fontFallbackClass} bg-white min-h-screen`}>
-        {children}
+      <body className="font-sans bg-gray-50 min-h-screen antialiased">
+        <div id="root" className="min-h-screen">
+          {children}
+        </div>
+        <div id="notifications" className="fixed top-4 right-4 z-50 space-y-2"></div>
       </body>
     </html>
   );
