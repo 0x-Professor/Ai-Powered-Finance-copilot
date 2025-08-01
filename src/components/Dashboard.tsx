@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faWallet, faCreditCard, faPiggyBank, faChartLine, faExclamationTriangle,
-  faLightbulb, faCheckCircle, faCoffee, faUtensils, faDollarSign, faUniversity,
-  faCalculator, faChartPie, faDownload, faMicrophone, faRobot, faPaperPlane,
+  faLightbulb, faCheckCircle, faCoffee, faUtensils, faUniversity,
+  faCalculator, faChartPie, faDownload, faRobot, faPaperPlane,
   faMicrophoneAlt, faSpinner, faTrophy, faBell, faStar, faBolt
 } from '@fortawesome/free-solid-svg-icons';
 import { Chart, registerables } from 'chart.js';
@@ -27,7 +27,6 @@ interface DashboardHandle {
 }
 
 const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref) => {
-Dashboard.displayName = 'Dashboard';
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [aiInput, setAiInput] = useState('');
   const [aiResponse, setAiResponse] = useState<string | null>(null);
@@ -35,6 +34,43 @@ Dashboard.displayName = 'Dashboard';
   const [points, setPoints] = useState(1250);
   const spendingChartRef = useRef<HTMLCanvasElement | null>(null);
   const spendingChartInstance = useRef<Chart | null>(null);
+
+  // Ask AI function
+  const askAI = useCallback(async () => {
+    if (!aiInput.trim()) return;
+    
+    setIsLoading(true);
+    setShowAiPanel(true);
+    
+    try {
+      // Define current spending data
+      const financialData: FinancialData = {
+        income: 5200,
+        expenses: {
+          dining: 850,
+          transport: 420,
+          shopping: 380,
+          entertainment: 250,
+          bills: 640,
+          other: 300
+        },
+        savings: 1200,
+        goal: userGoal,
+        riskProfile: 'Moderate'
+      };
+      
+      // Call Gemini API through our utility function
+      const aiText = await getFinancialAdvice(aiInput, financialData);
+      
+      setAiResponse(aiText);
+      setAiInput('');
+    } catch (error) {
+      console.error('Error calling Gemini API:', error);
+      setAiResponse('Sorry, I encountered an error while processing your request. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [aiInput, userGoal]);
 
   useEffect(() => {
     // Show welcome alert
@@ -64,7 +100,7 @@ Dashboard.displayName = 'Dashboard';
         spendingChartInstance.current.destroy();
       }
     };
-  }, []);
+  }, [askAI]);
 
   // Initialize spending chart
   const initializeSpendingChart = () => {
@@ -116,43 +152,6 @@ Dashboard.displayName = 'Dashboard';
   // Show welcome alert
   const showWelcomeAlert = () => {
     // Implementation would go here
-  };
-
-  // Ask AI function
-  const askAI = async () => {
-    if (!aiInput.trim()) return;
-    
-    setIsLoading(true);
-    setShowAiPanel(true);
-    
-    try {
-      // Define current spending data
-      const financialData: FinancialData = {
-        income: 5200,
-        expenses: {
-          dining: 850,
-          transport: 420,
-          shopping: 380,
-          entertainment: 250,
-          bills: 640,
-          other: 300
-        },
-        savings: 1200,
-        goal: userGoal,
-        riskProfile: 'Moderate'
-      };
-      
-      // Call Gemini API through our utility function
-      const aiText = await getFinancialAdvice(aiInput, financialData);
-      
-      setAiResponse(aiText);
-      setAiInput('');
-    } catch (error) {
-      console.error('Error calling Gemini API:', error);
-      setAiResponse('Sorry, I encountered an error while processing your request. Please try again later.');
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   // State for voice listening status
@@ -302,12 +301,8 @@ Dashboard.displayName = 'Dashboard';
     startListening
   }));
 
-  const stopListening = () => {
-    // Implementation would go here
-  };
-
   // Challenge completion functions
-  const completeChallenge = (challengeId: number) => {
+  const completeChallenge = () => {
     // Implementation would go here
     // For now, just update points
     updatePoints(100);
@@ -481,7 +476,7 @@ Dashboard.displayName = 'Dashboard';
                 </div>
                 <div className="ml-3">
                   <h4 className="text-sm font-medium text-danger-800">Dining budget exceeded</h4>
-                  <p className="text-sm text-danger-700 mt-1"> You&apos;re 12% over your dining budget this month</p>
+                  <p className="text-sm text-danger-700 mt-1">You&apos;re 12% over your dining budget this month</p>
                 </div>
               </div>
             </div>
@@ -535,7 +530,7 @@ Dashboard.displayName = 'Dashboard';
                   <span className="font-medium text-gray-800">Coffee Break Challenge</span>
                 </div>
                 <button 
-                  onClick={() => completeChallenge(1)}
+                  onClick={() => completeChallenge()}
                   className="btn-outline-success text-xs px-3 py-1 rounded-full">
                   <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
                   Mark Complete
@@ -560,7 +555,7 @@ Dashboard.displayName = 'Dashboard';
                   <span className="font-medium text-gray-800">Meal Prep Master</span>
                 </div>
                 <button 
-                  onClick={() => completeChallenge(2)}
+                  onClick={() => completeChallenge()}
                   className="btn-outline-success text-xs px-3 py-1 rounded-full">
                   <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
                   Mark Complete
@@ -630,5 +625,6 @@ Dashboard.displayName = 'Dashboard';
   );
 });
 
+Dashboard.displayName = 'Dashboard';
 
 export default Dashboard;
