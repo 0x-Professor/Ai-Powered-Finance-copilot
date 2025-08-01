@@ -396,70 +396,114 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
         </div>
 
         {/* Monthly Spending */}
-        <div className="bg-white rounded-xl shadow-lg p-6 card-hover">
+        <div className="card card-hover border-t-4 border-danger-500">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-600 font-medium">Monthly Spending</h3>
-            <FontAwesomeIcon icon={faCreditCard} className="text-red-500 text-xl" />
+            <h3 className="text-lg font-semibold text-gray-700">Monthly Spending</h3>
+            <div className="w-10 h-10 rounded-full bg-danger-100 flex items-center justify-center">
+              <FontAwesomeIcon icon={faCreditCard} className="text-danger-600" />
+            </div>
           </div>
-          <p className="text-3xl font-bold text-gray-800">$2,840</p>
-          <p className="text-red-500 text-sm mt-2">+12% from budget</p>
+          <p className="text-3xl font-bold mb-1 text-gray-800">$2,840</p>
+          <div className="flex items-center text-sm">
+            <span className="badge badge-danger">+$340</span>
+            <span className="text-gray-500 ml-2">from last month</span>
+          </div>
         </div>
-
+        
         {/* Savings Goal */}
-        <div className="bg-white rounded-xl shadow-lg p-6 card-hover">
+        <div className="card card-hover border-t-4 border-success-500">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-600 font-medium">{userGoal.description || 'Emergency Fund'}</h3>
-            <FontAwesomeIcon icon={faPiggyBank} className="text-blue-500 text-xl" />
+            <h3 className="text-lg font-semibold text-gray-700">{userGoal.description || 'Emergency Fund'}</h3>
+            <div className="w-10 h-10 rounded-full bg-success-100 flex items-center justify-center">
+              <FontAwesomeIcon icon={faPiggyBank} className="text-success-600" />
+            </div>
           </div>
-          <p className="text-3xl font-bold text-gray-800">$3,200</p>
-          <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
-            <div className="bg-blue-500 h-2 rounded-full progress-bar" style={{ width: '64%' }}></div>
+          <p className="text-3xl font-bold mb-1 text-gray-800">$3,200</p>
+          <div className="w-full bg-gray-200 rounded-full h-2.5 mb-1 overflow-hidden">
+            <div className="bg-success-500 h-2.5 rounded-full progress-bar" style={{ width: '64%' }}></div>
           </div>
-          <p className="text-blue-500 text-sm mt-2">64% of ${userGoal.amount?.toLocaleString() || '5,000'} goal</p>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-500">$3,200 saved</span>
+            <span className="badge badge-success">64%</span>
+          </div>
         </div>
-
+        
         {/* Investment Portfolio */}
-        <div className="bg-white rounded-xl shadow-lg p-6 card-hover">
+        <div className="card card-hover border-t-4 border-secondary-500">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-600 font-medium">Investments</h3>
-            <FontAwesomeIcon icon={faChartLine} className="text-purple-500 text-xl" />
+            <h3 className="text-lg font-semibold text-gray-700">Investments</h3>
+            <div className="w-10 h-10 rounded-full bg-secondary-100 flex items-center justify-center">
+              <FontAwesomeIcon icon={faChartLine} className="text-secondary-600" />
+            </div>
           </div>
-          <p className="text-3xl font-bold text-gray-800">$8,750</p>
-          <p className="text-green-500 text-sm mt-2">+8.4% this month</p>
+          <p className="text-3xl font-bold mb-1 text-gray-800">$8,750</p>
+          <div className="flex items-center text-sm">
+            <span className="badge badge-secondary">+8.4%</span>
+            <span className="text-gray-500 ml-2">this month</span>
+          </div>
         </div>
       </div>
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Spending Analysis */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-lg p-6 card-hover">
-          <h3 className="text-xl font-semibold mb-6">Spending Analysis</h3>
+        <div className="lg:col-span-2 card card-hover">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-700 flex items-center">
+              <FontAwesomeIcon icon={faChartPie} className="text-primary-500 mr-2" />
+              Spending Analysis
+            </h3>
+            <select className="input py-1 px-3 text-sm">
+              <option>This Month</option>
+              <option>Last Month</option>
+              <option>Last 3 Months</option>
+            </select>
+          </div>
           <canvas ref={spendingChartRef} width="400" height="200"></canvas>
         </div>
 
-        {/* AI Alerts */}
-        <div className="bg-white rounded-xl shadow-lg p-6 card-hover">
-          <h3 className="text-xl font-semibold mb-6">Smart Alerts</h3>
+        {/* Smart Alerts */}
+        <div className="card card-hover">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-700 flex items-center">
+              <FontAwesomeIcon icon={faBell} className="text-primary-500 mr-2" />
+              Smart Alerts
+            </h3>
+            <span className="badge badge-danger">3 New</span>
+          </div>
+          
           <div className="space-y-4">
-            <div className="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
-              <FontAwesomeIcon icon={faExclamationTriangle} className="text-yellow-500 mt-1" />
-              <div>
-                <p className="font-medium text-sm">Overspending Alert</p>
-                <p className="text-gray-600 text-xs">You're 12% over your dining budget this month</p>
+            <div className="border-l-4 border-danger-500 bg-danger-50 p-4 rounded-lg shadow-sm hover:shadow transition-all duration-300">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <FontAwesomeIcon icon={faExclamationTriangle} className="text-danger-600" />
+                </div>
+                <div className="ml-3">
+                  <h4 className="text-sm font-medium text-danger-800">Dining budget exceeded</h4>
+                  <p className="text-sm text-danger-700 mt-1">You're 12% over your dining budget this month</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-              <FontAwesomeIcon icon={faLightbulb} className="text-blue-500 mt-1" />
-              <div>
-                <p className="font-medium text-sm">Investment Opportunity</p>
-                <p className="text-gray-600 text-xs">Tech stocks are down 3% - good buying opportunity</p>
+            <div className="border-l-4 border-secondary-500 bg-secondary-50 p-4 rounded-lg shadow-sm hover:shadow transition-all duration-300">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <FontAwesomeIcon icon={faLightbulb} className="text-secondary-600" />
+                </div>
+                <div className="ml-3">
+                  <h4 className="text-sm font-medium text-secondary-800">Investment Opportunity</h4>
+                  <p className="text-sm text-secondary-700 mt-1">Tech stocks are down 3% - good buying opportunity</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-start space-x-3 p-3 bg-green-50 rounded-lg border-l-4 border-green-400">
-              <FontAwesomeIcon icon={faCheckCircle} className="text-green-500 mt-1" />
-              <div>
-                <p className="font-medium text-sm">Goal Achievement</p>
-                <p className="text-gray-600 text-xs">You're on track to reach your emergency fund goal!</p>
+            <div className="border-l-4 border-success-500 bg-success-50 p-4 rounded-lg shadow-sm hover:shadow transition-all duration-300">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <FontAwesomeIcon icon={faCheckCircle} className="text-success-600" />
+                </div>
+                <div className="ml-3">
+                  <h4 className="text-sm font-medium text-success-800">Goal Achievement</h4>
+                  <p className="text-sm text-success-700 mt-1">You're on track to reach your emergency fund goal!</p>
+                </div>
               </div>
             </div>
           </div>
