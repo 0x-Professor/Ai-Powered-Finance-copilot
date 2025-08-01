@@ -27,6 +27,7 @@ interface DashboardHandle {
 }
 
 const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref) => {
+Dashboard.displayName = 'Dashboard';
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [aiInput, setAiInput] = useState('');
   const [aiResponse, setAiResponse] = useState<string | null>(null);
@@ -480,7 +481,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
                 </div>
                 <div className="ml-3">
                   <h4 className="text-sm font-medium text-danger-800">Dining budget exceeded</h4>
-                  <p className="text-sm text-danger-700 mt-1">You're 12% over your dining budget this month</p>
+                  <p className="text-sm text-danger-700 mt-1"> You&apos;re 12% over your dining budget this month</p>
                 </div>
               </div>
             </div>
@@ -502,7 +503,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
                 </div>
                 <div className="ml-3">
                   <h4 className="text-sm font-medium text-success-800">Goal Achievement</h4>
-                  <p className="text-sm text-success-700 mt-1">You're on track to reach your emergency fund goal!</p>
+                  <p className="text-sm text-success-700 mt-1">You&apos;re on track to reach your emergency fund goal!</p>
                 </div>
               </div>
             </div>
