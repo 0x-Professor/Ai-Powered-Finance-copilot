@@ -24,7 +24,6 @@ const Header: React.FC<HeaderProps> = ({ onVoiceToggle }) => {
   const [currentTime, setCurrentTime] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(3);
 
   useEffect(() => {
     // Update time every minute
@@ -166,11 +165,6 @@ const Header: React.FC<HeaderProps> = ({ onVoiceToggle }) => {
             
             {/* Notifications */}
             <div className="relative">
-              {notificationCount > 0 && (
-                <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold shadow-lg">
-                  {notificationCount}
-                </div>
-              )}
               <button className="w-10 h-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg">
                 <FontAwesomeIcon icon={faBell} className="text-sm" />
               </button>

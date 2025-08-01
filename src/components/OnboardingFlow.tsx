@@ -5,8 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faRocket, faBullseye, faBrain, faUniversity, 
   faShieldAlt, faCar, faHome, faChartLine,
-  faArrowLeft, faArrowRight, faLightbulb, faCalendarAlt,
-  faClock, faTachometerAlt, faCheckCircle, faSpinner
+  faCheckCircle, faSpinner
 } from '@fortawesome/free-solid-svg-icons';
 import { generateFinancialAnalysis, FinancialData } from '../utils/geminiApi';
 
@@ -179,7 +178,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
           </div>
           <h2 className="text-4xl font-bold text-gray-800 mb-4">Welcome to FinanceAI Co-Pilot!</h2>
           <p className="text-xl text-gray-600 mb-2">Your AI-powered financial assistant</p>
-          <p className="text-gray-500">Let's connect your bank account securely to get started.</p>
+          <p className="text-gray-500">Let&apos;s connect your bank account securely to get started.</p>
         </div>
         
         <div className="max-w-md mx-auto">
@@ -238,8 +237,8 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
           <div className="w-24 h-24 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
             <FontAwesomeIcon icon={faBullseye} className="text-white text-4xl" />
           </div>
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">What's Your Financial Goal?</h2>
-          <p className="text-xl text-gray-600">Choose your primary savings objective and we'll create a personalized plan.</p>
+          <h2 className="text-4xl font-bold text-gray-800 mb-4">What&apos;s Your Financial Goal?</h2>
+          <p className="text-xl text-gray-600">Choose your primary savings objective and we&apos;ll create a personalized plan.</p>
         </div>
         
         <div className="max-w-3xl mx-auto">
@@ -337,7 +336,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
             <FontAwesomeIcon icon={faBrain} className="text-white text-4xl" />
           </div>
           <h2 className="text-4xl font-bold text-gray-800 mb-4">AI Analysis Complete!</h2>
-          <p className="text-xl text-gray-600">Here's your personalized financial roadmap</p>
+          <p className="text-xl text-gray-600">Here&apos;s your personalized financial roadmap</p>
         </div>
         
         <div className="max-w-4xl mx-auto">
