@@ -7,7 +7,7 @@ import {
   faLightbulb, faCheckCircle, faCoffee, faUtensils, faUniversity,
   faCalculator, faChartPie, faDownload, faRobot, faPaperPlane,
   faMicrophoneAlt, faSpinner, faTrophy, faBell, faStar, faBolt,
-  faSync, faPlus, faTrendingUp, faShieldAlt
+  faSync
 } from '@fortawesome/free-solid-svg-icons';
 import { Chart, registerables } from 'chart.js';
 import { getFinancialAdvice, FinancialData } from '../utils/geminiApi';
@@ -25,6 +25,19 @@ interface DashboardProps {
 
 interface DashboardHandle {
   startListening: () => void;
+}
+
+interface Challenge {
+  id: string;
+  title: string;
+  description: string;
+  targetAmount?: number;
+  currentAmount: number;
+  targetDays: number;
+  currentDays: number;
+  category: string;
+  points: number;
+  status: string;
 }
 
 interface DashboardData {
@@ -63,18 +76,7 @@ interface DashboardData {
     month: number;
     year: number;
   }>;
-  challenges: Array<{
-    id: string;
-    title: string;
-    description: string;
-    targetAmount?: number;
-    currentAmount: number;
-    targetDays: number;
-    currentDays: number;
-    category: string;
-    points: number;
-    status: string;
-  }>;
+  challenges: Challenge[];
   expenses: Array<{
     id: string;
     amount: number;
@@ -107,7 +109,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
       setDashboardData(data);
       
       // Calculate total points from active challenges
-      const totalPoints = data.challenges?.reduce((sum: number, challenge: any) => sum + challenge.points, 0) || 0;
+      const totalPoints = data.challenges?.reduce((sum: number, challenge: Challenge) => sum + challenge.points, 0) || 0;
       setPoints(totalPoints);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -130,7 +132,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
         expenses: dashboardData.budgets.reduce((acc, budget) => ({
           ...acc,
           [budget.category]: budget.spent
-        }), {} as any),
+        }), {} as Record<string, number>),
         savings: dashboardData.accounts.find(acc => acc.type === 'savings')?.balance || 0,
         goal: userGoal,
         riskProfile: dashboardData.profile.riskProfile
@@ -147,20 +149,8 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
     }
   }, [aiInput, dashboardData, userGoal]);
 
-  // Initialize component
-  useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
-
-  // Initialize spending chart when data is available
-  useEffect(() => {
-    if (dashboardData && dashboardData.budgets) {
-      initializeSpendingChart();
-    }
-  }, [dashboardData]);
-
   // Initialize spending chart with real data
-  const initializeSpendingChart = () => {
+  const initializeSpendingChart = useCallback(() => {
     if (!spendingChartRef.current || !dashboardData) return;
     
     const ctx = spendingChartRef.current.getContext('2d');
@@ -208,7 +198,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
               padding: 20,
               font: {
                 size: 12,
-                weight: '500'
+                weight: 500
               }
             }
           },
@@ -241,7 +231,19 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
         }
       }
     });
-  };
+  }, [dashboardData]);
+
+  // Initialize component
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  // Initialize spending chart when data is available
+  useEffect(() => {
+    if (dashboardData && dashboardData.budgets) {
+      initializeSpendingChart();
+    }
+  }, [dashboardData, initializeSpendingChart]);
 
   // Voice interaction functions
   const [isListening, setIsListening] = useState(false);
@@ -275,7 +277,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
         expenses: dashboardData.budgets.reduce((acc, budget) => ({
           ...acc,
           [budget.category]: budget.spent
-        }), {} as any),
+        }), {} as Record<string, number>),
         savings: dashboardData.accounts.find(acc => acc.type === 'savings')?.balance || 0,
         goal: userGoal,
         riskProfile: dashboardData.profile.riskProfile
@@ -650,55 +652,35 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
           </div>
           
           <div className="space-y-6">
-            <div className="p-4 bg-slate-50 rounded-xl hover:shadow-md transition-all duration-300">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full bg-warning-100 flex items-center justify-center mr-3">
-                    <FontAwesomeIcon icon={faCoffee} className="text-warning-600" />
+            {dashboardData.challenges.map((challenge) => (
+              <div key={challenge.id} className="p-4 bg-slate-50 rounded-xl hover:shadow-md transition-all duration-300">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center">
+                    <div className="w-8 h-8 rounded-full bg-warning-100 flex items-center justify-center mr-3">
+                      <FontAwesomeIcon icon={challenge.category === 'coffee' ? faCoffee : faUtensils} className="text-warning-600" />
+                    </div>
+                    <span className="font-medium text-gray-800">{challenge.title}</span>
                   </div>
-                  <span className="font-medium text-gray-800">Coffee Break Challenge</span>
+                  <button 
+                    onClick={() => completeChallenge(challenge.id)}
+                    className="btn-outline-success text-xs px-3 py-1 rounded-full">
+                    <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
+                    Mark Complete
+                  </button>
                 </div>
-                <button 
-                  onClick={() => completeChallenge()}
-                  className="btn-outline-success text-xs px-3 py-1 rounded-full">
-                  <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
-                  Mark Complete
-                </button>
-              </div>
-              <p className="text-sm text-gray-600 mb-2">Skip buying coffee for a week and save $25</p>
-              <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                <div className="bg-warning-500 h-2.5 rounded-full progress-bar" style={{ width: '60%' }}></div>
-              </div>
-              <div className="flex justify-between text-xs mt-2">
-                <span className="badge badge-warning">3/5 days</span>
-                <span className="badge badge-success">$15 saved</span>
-              </div>
-            </div>
-            
-            <div className="p-4 bg-slate-50 rounded-xl hover:shadow-md transition-all duration-300">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full bg-secondary-100 flex items-center justify-center mr-3">
-                    <FontAwesomeIcon icon={faUtensils} className="text-secondary-600" />
-                  </div>
-                  <span className="font-medium text-gray-800">Meal Prep Master</span>
+                <p className="text-sm text-gray-600 mb-2">{challenge.description}</p>
+                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                  <div 
+                    className="bg-warning-500 h-2.5 rounded-full progress-bar" 
+                    style={{ width: `${(challenge.currentDays / challenge.targetDays) * 100}%` }}
+                  ></div>
                 </div>
-                <button 
-                  onClick={() => completeChallenge()}
-                  className="btn-outline-success text-xs px-3 py-1 rounded-full">
-                  <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
-                  Mark Complete
-                </button>
+                <div className="flex justify-between text-xs mt-2">
+                  <span className="badge badge-warning">{challenge.currentDays}/{challenge.targetDays} days</span>
+                  <span className="badge badge-success">${challenge.currentAmount} saved</span>
+                </div>
               </div>
-              <p className="text-sm text-gray-600 mb-2">Prepare meals at home for 2 weeks and save $120</p>
-              <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                <div className="bg-secondary-500 h-2.5 rounded-full progress-bar" style={{ width: '30%' }}></div>
-              </div>
-              <div className="flex justify-between text-xs mt-2">
-                <span className="badge badge-secondary">4/14 days</span>
-                <span className="badge badge-success">$35 saved</span>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
         
