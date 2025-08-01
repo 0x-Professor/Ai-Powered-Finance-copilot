@@ -7,8 +7,8 @@ import {
   faLightbulb, faCheckCircle, faCoffee, faUtensils, faUniversity,
   faCalculator, faChartPie, faDownload, faRobot, faPaperPlane,
   faMicrophoneAlt, faSpinner, faTrophy, faBell, faStar, faBolt,
-  faSync, faArrowUp, faArrowDown, faTrendUp, faEye, faEyeSlash,
-  faExpand, faCompress, faFilter, faCalendarAlt
+  faSync, faArrowUp, faEye, faEyeSlash,
+  faExpand, faCompress, faFilter, faCalendarAlt, faCar, faShoppingBag, faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import { Chart, registerables } from 'chart.js';
 import { getFinancialAdvice, FinancialData } from '../utils/geminiApi';
@@ -818,7 +818,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
             { id: 'overview', label: 'Overview', icon: faChartPie },
             { id: 'spending', label: 'Spending', icon: faCreditCard },
             { id: 'goals', label: 'Goals', icon: faTrophy },
-            { id: 'trends', label: 'Trends', icon: faTrendUp }
+            { id: 'trends', label: 'Trends', icon: faChartLine }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -1023,7 +1023,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
         <div className={`bg-white rounded-3xl shadow-xl p-6 border border-gray-100 transition-all duration-300 ${expandedChart === 'trends' ? 'xl:col-span-2' : ''}`}>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-bold text-gray-800 flex items-center">
-              <FontAwesomeIcon icon={faTrendUp} className="text-green-500 mr-3" />
+              <FontAwesomeIcon icon={faChartLine} className="text-green-500 mr-3" />
               Financial Trends
             </h3>
             <div className="flex items-center space-x-3">
@@ -1290,7 +1290,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
                     icon={
                       expense.category === 'food' ? faUtensils :
                       expense.category === 'transport' ? faCar :
-                      expense.category === 'shopping' ? faBag :
+                      expense.category === 'shopping' ? faShoppingBag :
                       faCoffee
                     } 
                     className={`${
@@ -1409,7 +1409,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
           }`}
         >
           <FontAwesomeIcon 
-            icon={showAiPanel ? faClose : faRobot} 
+            icon={showAiPanel ? faTimes : faRobot} 
             className="text-white text-xl" 
           />
         </button>
