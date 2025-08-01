@@ -11,14 +11,7 @@ const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-
  */
 export interface FinancialData {
   income: number;
-  expenses: {
-    dining: number;
-    transport: number;
-    shopping: number;
-    entertainment: number;
-    bills: number;
-    other: number;
-  };
+  expenses: Record<string, number>;
   savings: number;
   goal?: {
     description?: string;
@@ -37,20 +30,13 @@ export interface FinancialData {
 export async function getFinancialAdvice(query: string, financialData: FinancialData): Promise<string> {
   try {
     // Calculate total expenses
-    const totalExpenses = financialData.expenses.dining + 
-                         financialData.expenses.transport + 
-                         financialData.expenses.shopping + 
-                         financialData.expenses.entertainment + 
-                         financialData.expenses.bills + 
-                         financialData.expenses.other;
+    const totalExpenses = Object.values(financialData.expenses).reduce((a, b) => a + b, 0);
     
     // Construct the prompt
     const prompt = `You are an AI financial advisor. The user has the following financial data:\n\n` +
                   `- Monthly income: $${financialData.income}\n` +
                   `- Monthly expenses: $${totalExpenses} ` +
-                  `(Dining: $${financialData.expenses.dining}, Transport: $${financialData.expenses.transport}, ` +
-                  `Shopping: $${financialData.expenses.shopping}, Entertainment: $${financialData.expenses.entertainment}, ` +
-                  `Bills: $${financialData.expenses.bills}, Other: $${financialData.expenses.other})\n` +
+                  `(${Object.entries(financialData.expenses).map(([key, value]) => `${key.charAt(0).toUpperCase() + key.slice(1)}: $${value}`).join(', ')})\n` +
                   `- Savings goal: ${financialData.goal?.description || 'Emergency Fund'} - $${financialData.goal?.amount?.toLocaleString() || '5,000'}\n` +
                   `- Available to invest: $${financialData.savings}\n` +
                   `- Risk profile: ${financialData.riskProfile || 'Moderate'}\n\n` +
@@ -103,12 +89,7 @@ export async function generateFinancialAnalysis(
 ): Promise<string> {
   try {
     // Calculate total expenses
-    const totalExpenses = financialData.expenses.dining + 
-                         financialData.expenses.transport + 
-                         financialData.expenses.shopping + 
-                         financialData.expenses.entertainment + 
-                         financialData.expenses.bills + 
-                         financialData.expenses.other;
+    const totalExpenses = Object.values(financialData.expenses).reduce((a, b) => a + b, 0);
     
     // Calculate monthly savings
     const monthlySavings = financialData.income - totalExpenses;
@@ -130,12 +111,7 @@ export async function generateFinancialAnalysis(
                   `- Target amount: $${goalAmount}\n` +
                   `- Target date: ${goalDate} (${monthsUntilGoal} months from now)\n\n` +
                   `Expense Breakdown:\n` +
-                  `- Dining: $${financialData.expenses.dining}\n` +
-                  `- Transport: $${financialData.expenses.transport}\n` +
-                  `- Shopping: $${financialData.expenses.shopping}\n` +
-                  `- Entertainment: $${financialData.expenses.entertainment}\n` +
-                  `- Bills: $${financialData.expenses.bills}\n` +
-                  `- Other: $${financialData.expenses.other}\n\n` +
+                  `${Object.entries(financialData.expenses).map(([key, value]) => `- ${key.charAt(0).toUpperCase() + key.slice(1)}: $${value}`).join('\n')}\n\n` +
                   `Please provide a comprehensive financial analysis with the following sections:\n` +
                   `1. Goal Achievability: Analyze if the user can reach their goal by the target date with current savings rate.\n` +
                   `2. Budget Adjustments: Suggest 2-3 specific categories where the user could reduce spending, with exact dollar amounts.\n` +
