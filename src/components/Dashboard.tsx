@@ -6,7 +6,8 @@ import {
   faWallet, faCreditCard, faPiggyBank, faChartLine, faExclamationTriangle,
   faLightbulb, faCheckCircle, faCoffee, faUtensils, faUniversity,
   faCalculator, faChartPie, faDownload, faRobot, faPaperPlane,
-  faMicrophoneAlt, faSpinner, faTrophy, faBell, faStar, faBolt
+  faMicrophoneAlt, faSpinner, faTrophy, faBell, faStar, faBolt,
+  faSync, faPlus, faTrendingUp, faShieldAlt
 } from '@fortawesome/free-solid-svg-icons';
 import { Chart, registerables } from 'chart.js';
 import { getFinancialAdvice, FinancialData } from '../utils/geminiApi';
@@ -26,140 +27,228 @@ interface DashboardHandle {
   startListening: () => void;
 }
 
+interface DashboardData {
+  id: string;
+  name: string;
+  email: string;
+  profile: {
+    monthlyIncome: number;
+    riskProfile: string;
+    occupation?: string;
+    age?: number;
+  };
+  accounts: Array<{
+    id: string;
+    name: string;
+    type: string;
+    balance: number;
+    institution?: string;
+  }>;
+  goals: Array<{
+    id: string;
+    title: string;
+    description?: string;
+    targetAmount: number;
+    currentAmount: number;
+    targetDate: string;
+    category: string;
+    priority: string;
+    status: string;
+  }>;
+  budgets: Array<{
+    id: string;
+    category: string;
+    amount: number;
+    spent: number;
+    month: number;
+    year: number;
+  }>;
+  challenges: Array<{
+    id: string;
+    title: string;
+    description: string;
+    targetAmount?: number;
+    currentAmount: number;
+    targetDays: number;
+    currentDays: number;
+    category: string;
+    points: number;
+    status: string;
+  }>;
+  expenses: Array<{
+    id: string;
+    amount: number;
+    category: string;
+    description?: string;
+    date: string;
+  }>;
+}
+
 const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref) => {
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [aiInput, setAiInput] = useState('');
   const [aiResponse, setAiResponse] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [points, setPoints] = useState(1250);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [points, setPoints] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
   const spendingChartRef = useRef<HTMLCanvasElement | null>(null);
   const spendingChartInstance = useRef<Chart | null>(null);
 
-  // Ask AI function
+  // Fetch dashboard data from API
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setIsDataLoading(true);
+      const response = await fetch('/api/dashboard?userId=demo-user');
+      if (!response.ok) throw new Error('Failed to fetch data');
+      
+      const data = await response.json();
+      setDashboardData(data);
+      
+      // Calculate total points from active challenges
+      const totalPoints = data.challenges?.reduce((sum: number, challenge: any) => sum + challenge.points, 0) || 0;
+      setPoints(totalPoints);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setIsDataLoading(false);
+    }
+  }, []);
+
+  // Ask AI function with real data
   const askAI = useCallback(async () => {
-    if (!aiInput.trim()) return;
+    if (!aiInput.trim() || !dashboardData) return;
     
     setIsLoading(true);
     setShowAiPanel(true);
     
     try {
-      // Define current spending data
+      // Use real financial data from database
       const financialData: FinancialData = {
-        income: 5200,
-        expenses: {
-          dining: 850,
-          transport: 420,
-          shopping: 380,
-          entertainment: 250,
-          bills: 640,
-          other: 300
-        },
-        savings: 1200,
+        income: dashboardData.profile.monthlyIncome,
+        expenses: dashboardData.budgets.reduce((acc, budget) => ({
+          ...acc,
+          [budget.category]: budget.spent
+        }), {} as any),
+        savings: dashboardData.accounts.find(acc => acc.type === 'savings')?.balance || 0,
         goal: userGoal,
-        riskProfile: 'Moderate'
+        riskProfile: dashboardData.profile.riskProfile
       };
       
-      // Call Gemini API through our utility function
       const aiText = await getFinancialAdvice(aiInput, financialData);
-      
       setAiResponse(aiText);
       setAiInput('');
     } catch (error) {
-      console.error('Error calling Gemini API:', error);
-      setAiResponse('Sorry, I encountered an error while processing your request. Please try again later.');
+      console.error('Error calling AI:', error);
+      setAiResponse('Sorry, I encountered an error. Please try again later.');
     } finally {
       setIsLoading(false);
     }
-  }, [aiInput, userGoal]);
+  }, [aiInput, dashboardData, userGoal]);
 
+  // Initialize component
   useEffect(() => {
-    // Show welcome alert
-    showWelcomeAlert();
-    
-    // Initialize spending chart
-    initializeSpendingChart();
-    
-    // Set up event listeners
-    const aiInputField = document.getElementById('aiInput');
-    if (aiInputField) {
-      aiInputField.addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-          askAI();
-        }
-      });
-    }
-    
-    // Simulate real-time updates
-    const updateInterval = setInterval(() => {
-      // Update random values for demo purposes
-    }, 5000);
-    
-    return () => {
-      clearInterval(updateInterval);
-      if (spendingChartInstance.current) {
-        spendingChartInstance.current.destroy();
-      }
-    };
-  }, [askAI]);
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
-  // Initialize spending chart
+  // Initialize spending chart when data is available
+  useEffect(() => {
+    if (dashboardData && dashboardData.budgets) {
+      initializeSpendingChart();
+    }
+  }, [dashboardData]);
+
+  // Initialize spending chart with real data
   const initializeSpendingChart = () => {
-    if (spendingChartRef.current) {
-      const ctx = spendingChartRef.current.getContext('2d');
-      if (ctx) {
-        if (spendingChartInstance.current) {
-          spendingChartInstance.current.destroy();
-        }
-        
-        spendingChartInstance.current = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: ['Dining', 'Transport', 'Shopping', 'Entertainment', 'Bills', 'Other'],
-            datasets: [
-              {
-                label: 'Actual Spending',
-                data: [850, 420, 380, 250, 640, 300],
-                backgroundColor: 'rgba(99, 102, 241, 0.6)',
-                borderColor: 'rgba(99, 102, 241, 1)',
-                borderWidth: 1
-              },
-              {
-                label: 'Budget',
-                data: [700, 450, 400, 200, 650, 350],
-                backgroundColor: 'rgba(209, 213, 219, 0.6)',
-                borderColor: 'rgba(209, 213, 219, 1)',
-                borderWidth: 1
-              }
-            ]
+    if (!spendingChartRef.current || !dashboardData) return;
+    
+    const ctx = spendingChartRef.current.getContext('2d');
+    if (!ctx) return;
+
+    if (spendingChartInstance.current) {
+      spendingChartInstance.current.destroy();
+    }
+
+    const categories = dashboardData.budgets.map(b => b.category.charAt(0).toUpperCase() + b.category.slice(1));
+    const spentData = dashboardData.budgets.map(b => b.spent);
+    const budgetData = dashboardData.budgets.map(b => b.amount);
+    
+    spendingChartInstance.current = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: categories,
+        datasets: [
+          {
+            label: 'Actual Spending',
+            data: spentData,
+            backgroundColor: 'rgba(14, 165, 233, 0.8)',
+            borderColor: 'rgba(14, 165, 233, 1)',
+            borderWidth: 2,
+            borderRadius: 8
           },
-          options: {
-            responsive: true,
-            scales: {
-              y: {
-                beginAtZero: true,
-                title: {
-                  display: true,
-                  text: 'Amount ($)'
-                }
+          {
+            label: 'Budget',
+            data: budgetData,
+            backgroundColor: 'rgba(156, 163, 175, 0.6)',
+            borderColor: 'rgba(156, 163, 175, 1)',
+            borderWidth: 2,
+            borderRadius: 8
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              padding: 20,
+              font: {
+                size: 12,
+                weight: '500'
               }
             }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            titleColor: 'white',
+            bodyColor: 'white',
+            borderColor: 'rgba(14, 165, 233, 1)',
+            borderWidth: 1,
+            cornerRadius: 8
           }
-        });
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(156, 163, 175, 0.2)'
+            },
+            ticks: {
+              callback: function(value) {
+                return '$' + value;
+              }
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
       }
-    }
+    });
   };
 
-  // Show welcome alert
-  const showWelcomeAlert = () => {
-    // Implementation would go here
-  };
-
-  // State for voice listening status
+  // Voice interaction functions
   const [isListening, setIsListening] = useState(false);
   
-  // Voice interaction functions
   const startListening = async () => {
-    // Toggle listening state
+    if (!dashboardData) return;
+    
     if (isListening) {
       setIsListening(false);
       setAiResponse('Listening stopped.');
@@ -170,7 +259,6 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
     setShowAiPanel(true);
     setIsLoading(true);
     
-    // Simulate voice recognition
     const voiceQueries = [
       "How can I reduce my dining expenses?",
       "Should I invest in stocks or ETFs?",
@@ -182,155 +270,196 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
     const randomQuery = voiceQueries[Math.floor(Math.random() * voiceQueries.length)];
     
     try {
-      // Define current spending data
       const financialData: FinancialData = {
-        income: 5200,
-        expenses: {
-          dining: 850,
-          transport: 420,
-          shopping: 380,
-          entertainment: 250,
-          bills: 640,
-          other: 300
-        },
-        savings: 1200,
+        income: dashboardData.profile.monthlyIncome,
+        expenses: dashboardData.budgets.reduce((acc, budget) => ({
+          ...acc,
+          [budget.category]: budget.spent
+        }), {} as any),
+        savings: dashboardData.accounts.find(acc => acc.type === 'savings')?.balance || 0,
         goal: userGoal,
-        riskProfile: 'Moderate'
+        riskProfile: dashboardData.profile.riskProfile
       };
       
-      // Call Gemini API through our utility function
       const aiText = await getFinancialAdvice(randomQuery, financialData);
-      
-      // Determine if this is an investment-related query
-      const isInvestmentQuery = randomQuery.toLowerCase().includes('invest') || 
-                               aiText.toLowerCase().includes('invest') || 
-                               aiText.toLowerCase().includes('stock') || 
-                               aiText.toLowerCase().includes('etf');
-      
-      // Set the AI response with appropriate UI
-      if (isInvestmentQuery) {
-        setAiResponse(`
-          <div class="text-left">
-            <div class="flex items-center mb-3">
-              <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
-                <i class="fas fa-microphone text-white text-sm"></i>
-              </div>
-              <span class="font-semibold">Voice Query:</span>
+      setAiResponse(`
+        <div class="text-left space-y-4">
+          <div class="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
+            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+              <i class="fas fa-microphone text-white text-sm"></i>
             </div>
-            <div class="bg-blue-50 border-l-4 border-blue-400 p-3 mb-3">
-              <p class="text-sm text-blue-700 font-medium">"${randomQuery}"</p>
-            </div>
-            
-            <div class="flex items-center mb-3">
-              <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center mr-3">
-                <i class="fas fa-robot text-white text-sm"></i>
-              </div>
-              <span class="font-semibold">AI Investment Advisor</span>
-            </div>
-            <div class="text-gray-700 mb-4 whitespace-pre-wrap">${aiText}</div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
-              <div class="bg-green-50 p-3 rounded-lg text-center">
-                <p class="text-xs text-green-600">Available to Invest</p>
-                <p class="font-bold text-green-700">$1,200</p>
-              </div>
-              <div class="bg-blue-50 p-3 rounded-lg text-center">
-                <p class="text-xs text-blue-600">Risk Level</p>
-                <p class="font-bold text-blue-700">Moderate</p>
-              </div>
-              <div class="bg-purple-50 p-3 rounded-lg text-center">
-                <p class="text-xs text-purple-600">Recommended</p>
-                <p class="font-bold text-purple-700">$100-500</p>
-              </div>
-            </div>
-            <div class="flex space-x-2">
-              <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
-                <i class="fas fa-chart-line mr-1"></i>Start Investing
-              </button>
-              <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
-                <i class="fas fa-graduation-cap mr-1"></i>Learn More
-              </button>
-              <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm transition-colors">
-                Ask Another Question
-              </button>
+            <div>
+              <p class="text-sm font-medium text-blue-800">Voice Query</p>
+              <p class="text-sm text-blue-600">"${randomQuery}"</p>
             </div>
           </div>
-        `);
-      } else {
-        setAiResponse(`
-          <div class="text-left">
-            <div class="flex items-center mb-3">
-              <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
-                <i class="fas fa-microphone text-white text-sm"></i>
-              </div>
-              <span class="font-semibold">Voice Query:</span>
+          
+          <div class="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg">
+            <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+              <i class="fas fa-robot text-white text-sm"></i>
             </div>
-            <div class="bg-blue-50 border-l-4 border-blue-400 p-3 mb-3">
-              <p class="text-sm text-blue-700 font-medium">"${randomQuery}"</p>
-            </div>
-            
-            <div class="flex items-center mb-3">
-              <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center mr-3">
-                <i class="fas fa-robot text-white text-sm"></i>
-              </div>
-              <span class="font-semibold">AI Financial Advisor</span>
-            </div>
-            <div class="text-gray-700 whitespace-pre-wrap">${aiText}</div>
-            <div class="mt-4 flex space-x-2">
-              <button class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
-                Implement This
-              </button>
-              <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm transition-colors">
-                Tell Me More
-              </button>
+            <div>
+              <p class="text-sm font-medium text-purple-800">AI Financial Advisor</p>
             </div>
           </div>
-        `);
-      }
+          
+          <div class="prose prose-sm max-w-none text-gray-700 bg-gray-50 p-4 rounded-lg">
+            ${aiText.replace(/\n/g, '<br>')}
+          </div>
+          
+          <div class="flex flex-wrap gap-2 pt-2">
+            <button class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center">
+              <i class="fas fa-thumbs-up mr-2"></i>Helpful
+            </button>
+            <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm transition-colors flex items-center">
+              <i class="fas fa-question mr-2"></i>Ask Follow-up
+            </button>
+          </div>
+        </div>
+      `);
       setIsListening(false);
     } catch (error) {
-      console.error('Error calling Gemini API:', error);
-      setAiResponse('Sorry, I encountered an error while processing your voice query. Please try again later.');
+      console.error('Error with voice query:', error);
+      setAiResponse('Sorry, I encountered an error. Please try again.');
       setIsListening(false);
     } finally {
       setIsLoading(false);
     }
   };
   
-  // Expose methods to parent component
   useImperativeHandle(ref, () => ({
     startListening
   }));
 
-  // Challenge completion functions
-  const completeChallenge = () => {
-    // Implementation would go here
-    // For now, just update points
-    updatePoints(100);
+  // Complete challenge function with API call
+  const completeChallenge = async (challengeId: string) => {
+    try {
+      const response = await fetch('/api/challenges', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ challengeId, userId: 'demo-user' })
+      });
+      
+      if (response.ok) {
+        await fetchDashboardData(); // Refresh data
+        setPoints(prev => prev + 100); // Award points
+      }
+    } catch (error) {
+      console.error('Error completing challenge:', error);
+    }
   };
 
-  const updatePoints = (amount: number) => {
-    setPoints(prev => prev + amount);
+  // Refresh data function
+  const refreshData = async () => {
+    setRefreshing(true);
+    await fetchDashboardData();
+    setTimeout(() => setRefreshing(false), 1000);
   };
+
+  // Calculate total balance from accounts
+  const totalBalance = dashboardData?.accounts.reduce((sum, account) => sum + account.balance, 0) || 0;
+  
+  // Calculate monthly spending from budgets
+  const monthlySpending = dashboardData?.budgets.reduce((sum, budget) => sum + budget.spent, 0) || 0;
+  
+  // Get primary goal
+  const primaryGoal = dashboardData?.goals.find(goal => goal.priority === 'High') || dashboardData?.goals[0];
+  
+  // Get investment account
+  const investmentAccount = dashboardData?.accounts.find(acc => acc.type === 'investment');
+
+  if (isDataLoading) {
+    return (
+      <div className="container mx-auto px-4 md:px-6 py-6">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-lg font-medium text-gray-600">Loading your financial dashboard...</p>
+            <p className="text-sm text-gray-500">Analyzing your financial data</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="container mx-auto px-4 md:px-6 py-6">
+        <div className="text-center py-12">
+          <FontAwesomeIcon icon={faExclamationTriangle} className="text-6xl text-gray-400 mb-4" />
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">Unable to load dashboard</h3>
+          <p className="text-gray-500 mb-4">There was an error loading your financial data.</p>
+          <button onClick={fetchDashboardData} className="btn btn-primary">
+            <FontAwesomeIcon icon={faSync} className="mr-2" />
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Quick action functions
   const connectBank = () => {
-    // Implementation would go here
+    alert('Bank connection feature - In production, this would integrate with Plaid or similar APIs');
   };
 
   const setBudget = () => {
-    // Implementation would go here
+    alert('Budget setting feature - In production, this would open a budget configuration modal');
   };
 
   const investmentAdvice = () => {
-    // Implementation would go here
+    setAiInput('What are some good investment opportunities for my risk profile?');
+    askAI();
   };
 
   const exportData = () => {
-    // Implementation would go here
+    // In production, this would generate and download a CSV/PDF report
+    const data = {
+      user: dashboardData?.name,
+      totalBalance: totalBalance,
+      monthlySpending: monthlySpending,
+      goals: dashboardData?.goals.map(g => ({
+        title: g.title,
+        progress: `${Math.round((g.currentAmount / g.targetAmount) * 100)}%`,
+        target: g.targetAmount
+      })),
+      exportDate: new Date().toISOString()
+    };
+    
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "financial-report.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
   };
 
   return (
-    <div className="container mx-auto px-4 md:px-6 py-6">
+    <div className="container mx-auto px-4 md:px-6 py-6 space-y-8">
+      {/* Welcome Header */}
+      <div className="flex items-center justify-between bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl p-6 text-white">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">Welcome back, {dashboardData.name}!</h1>
+          <p className="text-primary-100">Here&apos;s your financial overview for today</p>
+        </div>
+        <div className="flex items-center space-x-4">
+          <button 
+            onClick={refreshData}
+            className={`p-3 bg-white/20 hover:bg-white/30 rounded-full transition-all duration-300 ${refreshing ? 'animate-spin' : ''}`}
+          >
+            <FontAwesomeIcon icon={faSync} className="text-white" />
+          </button>
+          <div className="text-right">
+            <p className="text-sm text-primary-100">Total Points</p>
+            <p className="text-xl font-bold flex items-center">
+              <FontAwesomeIcon icon={faStar} className="text-yellow-300 mr-1" />
+              {points}
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* AI Assistant Panel */}
       <div className={`card mb-8 relative border-l-4 border-primary-500 overflow-hidden ${showAiPanel ? '' : 'hidden'}`}>
         <div className="absolute top-0 left-0 w-full h-1 gradient-bg"></div>
@@ -387,7 +516,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
             <h3 className="text-gray-600 font-medium">Total Balance</h3>
             <FontAwesomeIcon icon={faWallet} className="text-green-500 text-xl" />
           </div>
-          <p className="text-3xl font-bold text-gray-800">$12,450</p>
+          <p className="text-3xl font-bold text-gray-800">${totalBalance.toFixed(2)}</p>
           <p className="text-green-500 text-sm mt-2">+5.2% from last month</p>
         </div>
 
@@ -399,7 +528,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
               <FontAwesomeIcon icon={faCreditCard} className="text-danger-600" />
             </div>
           </div>
-          <p className="text-3xl font-bold mb-1 text-gray-800">$2,840</p>
+          <p className="text-3xl font-bold mb-1 text-gray-800">${monthlySpending.toFixed(2)}</p>
           <div className="flex items-center text-sm">
             <span className="badge badge-danger">+$340</span>
             <span className="text-gray-500 ml-2">from last month</span>
@@ -414,13 +543,13 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
               <FontAwesomeIcon icon={faPiggyBank} className="text-success-600" />
             </div>
           </div>
-          <p className="text-3xl font-bold mb-1 text-gray-800">$3,200</p>
+          <p className="text-3xl font-bold mb-1 text-gray-800">${primaryGoal ? primaryGoal.currentAmount.toFixed(2) : '0.00'}</p>
           <div className="w-full bg-gray-200 rounded-full h-2.5 mb-1 overflow-hidden">
-            <div className="bg-success-500 h-2.5 rounded-full progress-bar" style={{ width: '64%' }}></div>
+            <div className="bg-success-500 h-2.5 rounded-full progress-bar" style={{ width: primaryGoal ? `${(primaryGoal.currentAmount / primaryGoal.targetAmount) * 100}%` : '0%' }}></div>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">$3,200 saved</span>
-            <span className="badge badge-success">64%</span>
+            <span className="text-gray-500">${primaryGoal ? primaryGoal.targetAmount.toFixed(2) : '0.00'} target</span>
+            <span className="badge badge-success">{primaryGoal ? `${Math.round((primaryGoal.currentAmount / primaryGoal.targetAmount) * 100)}%` : '0%'}</span>
           </div>
         </div>
         
@@ -432,7 +561,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
               <FontAwesomeIcon icon={faChartLine} className="text-secondary-600" />
             </div>
           </div>
-          <p className="text-3xl font-bold mb-1 text-gray-800">$8,750</p>
+          <p className="text-3xl font-bold mb-1 text-gray-800">${investmentAccount ? investmentAccount.balance.toFixed(2) : '0.00'}</p>
           <div className="flex items-center text-sm">
             <span className="badge badge-secondary">+8.4%</span>
             <span className="text-gray-500 ml-2">this month</span>
@@ -613,18 +742,3 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
             <button 
               onClick={exportData}
               className="flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md">
-              <div className="w-12 h-12 rounded-full gradient-warning flex items-center justify-center mb-3 shadow-md">
-                <FontAwesomeIcon icon={faDownload} className="text-white" />
-              </div>
-              <span className="text-sm font-medium text-gray-800">Export Data</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-});
-
-Dashboard.displayName = 'Dashboard';
-
-export default Dashboard;
