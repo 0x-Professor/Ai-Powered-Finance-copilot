@@ -1206,8 +1206,8 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
             <button 
               onClick={investmentAdvice}
               className="flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md">
-              <div className="w-12 h-12 rounded-full gradient-secondary flex items-center justify-center mb-3 shadow-md">
-                <FontAwesomeIcon icon={faChartPie} className="text-white" />
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center mb-3 shadow-md">
+                <FontAwesomeIcon icon={faChartLine} className="text-white" />
               </div>
               <span className="text-sm font-medium text-gray-800">Investment Tips</span>
             </button>
@@ -1215,14 +1215,217 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
             <button 
               onClick={exportData}
               className="flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md">
-              <div className="w-12 h-12 rounded-full gradient-warning flex items-center justify-center mb-3 shadow-md">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-orange-500 to-red-600 flex items-center justify-center mb-3 shadow-md">
                 <FontAwesomeIcon icon={faDownload} className="text-white" />
               </div>
               <span className="text-sm font-medium text-gray-800">Export Data</span>
             </button>
+            
+            <button 
+              onClick={() => setShowAiPanel(true)}
+              className="flex flex-col items-center justify-center bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md border border-purple-200">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center mb-3 shadow-md">
+                <FontAwesomeIcon icon={faRobot} className="text-white" />
+              </div>
+              <span className="text-sm font-medium text-purple-800">Ask AI</span>
+            </button>
+            
+            <button 
+              onClick={startListening}
+              className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-300 hover:shadow-md ${
+                isListening 
+                  ? 'bg-gradient-to-r from-red-100 to-pink-100 border border-red-300' 
+                  : 'bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 hover:from-green-100 hover:to-emerald-100'
+              }`}>
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 shadow-md ${
+                isListening 
+                  ? 'bg-gradient-to-r from-red-500 to-pink-600 animate-pulse' 
+                  : 'bg-gradient-to-r from-green-500 to-emerald-600'
+              }`}>
+                <FontAwesomeIcon 
+                  icon={isListening ? faSpinner : faMicrophoneAlt} 
+                  className={`text-white ${isListening ? 'animate-spin' : ''}`} 
+                />
+              </div>
+              <span className={`text-sm font-medium ${isListening ? 'text-red-800' : 'text-green-800'}`}>
+                {isListening ? 'Listening...' : 'Voice Ask'}
+              </span>
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Enhanced Recent Transactions */}
+      <div className="bg-white rounded-3xl shadow-xl p-6 border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold text-gray-800 flex items-center">
+            <FontAwesomeIcon icon={faCalendarAlt} className="text-blue-500 mr-3" />
+            Recent Transactions
+          </h3>
+          <div className="flex items-center space-x-3">
+            <select className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option>All Categories</option>
+              <option>Food & Dining</option>
+              <option>Transportation</option>
+              <option>Shopping</option>
+              <option>Entertainment</option>
+            </select>
+            <button className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium">
+              View All
+            </button>
+          </div>
+        </div>
+        
+        <div className="space-y-4">
+          {dashboardData.expenses.slice(0, 5).map((expense, index) => (
+            <div key={expense.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300">
+              <div className="flex items-center space-x-4">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                  expense.category === 'food' ? 'bg-orange-100' :
+                  expense.category === 'transport' ? 'bg-blue-100' :
+                  expense.category === 'shopping' ? 'bg-purple-100' :
+                  'bg-green-100'
+                }`}>
+                  <FontAwesomeIcon 
+                    icon={
+                      expense.category === 'food' ? faUtensils :
+                      expense.category === 'transport' ? faCar :
+                      expense.category === 'shopping' ? faBag :
+                      faCoffee
+                    } 
+                    className={`${
+                      expense.category === 'food' ? 'text-orange-600' :
+                      expense.category === 'transport' ? 'text-blue-600' :
+                      expense.category === 'shopping' ? 'text-purple-600' :
+                      'text-green-600'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-800">
+                    {expense.description || `${expense.category.charAt(0).toUpperCase() + expense.category.slice(1)} Purchase`}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    {new Date(expense.date).toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="font-bold text-gray-800">
+                  -{formatCurrency(expense.amount, hideBalance)}
+                </p>
+                <p className="text-xs text-gray-500 capitalize">{expense.category}</p>
+              </div>
+            </div>
+          ))}
+          
+          {dashboardData.expenses.length === 0 && (
+            <div className="text-center py-12">
+              <FontAwesomeIcon icon={faCalendarAlt} className="text-4xl text-gray-300 mb-4" />
+              <p className="text-gray-500">No recent transactions found</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Enhanced Financial Health Score */}
+      <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-8 text-white shadow-2xl">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h3 className="text-2xl font-bold mb-2">Financial Health Score</h3>
+            <p className="text-purple-100">Based on your spending, saving, and investment patterns</p>
+          </div>
+          <div className="text-right">
+            <div className="text-5xl font-bold mb-2">85</div>
+            <div className="text-purple-100">Excellent</div>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-purple-100">Budgeting</span>
+              <span className="text-green-300 font-bold">92%</span>
+            </div>
+            <div className="w-full bg-white/20 rounded-full h-2">
+              <div className="bg-green-400 h-2 rounded-full" style={{ width: '92%' }}></div>
+            </div>
+          </div>
+          
+          <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-purple-100">Saving</span>
+              <span className="text-yellow-300 font-bold">78%</span>
+            </div>
+            <div className="w-full bg-white/20 rounded-full h-2">
+              <div className="bg-yellow-400 h-2 rounded-full" style={{ width: '78%' }}></div>
+            </div>
+          </div>
+          
+          <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-purple-100">Investing</span>
+              <span className="text-blue-300 font-bold">85%</span>
+            </div>
+            <div className="w-full bg-white/20 rounded-full h-2">
+              <div className="bg-blue-400 h-2 rounded-full" style={{ width: '85%' }}></div>
+            </div>
+          </div>
+          
+          <div className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-purple-100">Debt Management</span>
+              <span className="text-green-300 font-bold">88%</span>
+            </div>
+            <div className="w-full bg-white/20 rounded-full h-2">
+              <div className="bg-green-400 h-2 rounded-full" style={{ width: '88%' }}></div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-6 flex items-center justify-center space-x-4">
+          <button className="bg-white/20 hover:bg-white/30 px-6 py-3 rounded-xl backdrop-blur-sm transition-all duration-300 font-medium">
+            View Detailed Report
+          </button>
+          <button className="bg-white text-purple-600 hover:bg-purple-50 px-6 py-3 rounded-xl transition-all duration-300 font-medium">
+            Get Improvement Tips
+          </button>
+        </div>
+      </div>
+
+      {/* Floating Action Button for AI */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <button
+          onClick={() => setShowAiPanel(!showAiPanel)}
+          className={`w-16 h-16 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 ${
+            showAiPanel
+              ? 'bg-gradient-to-r from-red-500 to-pink-600 rotate-45'
+              : 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:shadow-purple-500/25'
+          }`}
+        >
+          <FontAwesomeIcon 
+            icon={showAiPanel ? faClose : faRobot} 
+            className="text-white text-xl" 
+          />
+        </button>
+      </div>
+
+      {/* Loading Overlay */}
+      {(isLoading || refreshing) && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-8 shadow-2xl flex items-center space-x-4">
+            <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-lg font-medium text-gray-700">
+              {refreshing ? 'Refreshing data...' : 'Processing...'}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 });
