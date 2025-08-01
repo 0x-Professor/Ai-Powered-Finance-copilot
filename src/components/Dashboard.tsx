@@ -7,7 +7,8 @@ import {
   faLightbulb, faCheckCircle, faCoffee, faUtensils, faUniversity,
   faCalculator, faChartPie, faDownload, faRobot, faPaperPlane,
   faMicrophoneAlt, faSpinner, faTrophy, faBell, faStar, faBolt,
-  faSync
+  faSync, faArrowUp, faArrowDown, faTrendUp, faEye, faEyeSlash,
+  faExpand, faCompress, faFilter, faCalendarAlt
 } from '@fortawesome/free-solid-svg-icons';
 import { Chart, registerables } from 'chart.js';
 import { getFinancialAdvice, FinancialData } from '../utils/geminiApi';
@@ -95,8 +96,19 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [points, setPoints] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [expandedChart, setExpandedChart] = useState<string | null>(null);
+  const [hideBalance, setHideBalance] = useState(false);
+  const [selectedTimeframe, setSelectedTimeframe] = useState('month');
+  const [activeTab, setActiveTab] = useState('overview');
+  
   const spendingChartRef = useRef<HTMLCanvasElement | null>(null);
   const spendingChartInstance = useRef<Chart | null>(null);
+  const goalsChartRef = useRef<HTMLCanvasElement | null>(null);
+  const goalsChartInstance = useRef<Chart | null>(null);
+  const trendChartRef = useRef<HTMLCanvasElement | null>(null);
+  const trendChartInstance = useRef<Chart | null>(null);
+  const savingsChartRef = useRef<HTMLCanvasElement | null>(null);
+  const savingsChartInstance = useRef<Chart | null>(null);
 
   // Fetch dashboard data from API
   const fetchDashboardData = useCallback(async () => {
@@ -149,7 +161,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
     }
   }, [aiInput, dashboardData, userGoal]);
 
-  // Initialize spending chart with real data
+  // Initialize spending chart with better sizing and styling
   const initializeSpendingChart = useCallback(() => {
     if (!spendingChartRef.current || !dashboardData) return;
     
@@ -175,56 +187,359 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
             backgroundColor: 'rgba(14, 165, 233, 0.8)',
             borderColor: 'rgba(14, 165, 233, 1)',
             borderWidth: 2,
-            borderRadius: 8
+            borderRadius: 8,
+            borderSkipped: false,
           },
           {
             label: 'Budget',
             data: budgetData,
-            backgroundColor: 'rgba(156, 163, 175, 0.6)',
-            borderColor: 'rgba(156, 163, 175, 1)',
-            borderWidth: 2,
-            borderRadius: 8
+            backgroundColor: 'rgba(156, 163, 175, 0.4)',
+            borderColor: 'rgba(156, 163, 175, 0.8)',
+            borderWidth: 1,
+            borderRadius: 8,
+            borderSkipped: false,
           }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
         plugins: {
           legend: {
             position: 'top',
             labels: {
               usePointStyle: true,
-              padding: 20,
+              padding: 15,
               font: {
-                size: 12,
-                weight: 500
+                size: 11,
+                weight: '500'
               }
             }
           },
           tooltip: {
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
             titleColor: 'white',
             bodyColor: 'white',
-            borderColor: 'rgba(14, 165, 233, 1)',
+            borderColor: 'rgba(14, 165, 233, 0.8)',
             borderWidth: 1,
-            cornerRadius: 8
+            cornerRadius: 8,
+            padding: 12,
+            displayColors: true,
+            callbacks: {
+              label: function(context) {
+                return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
+              }
+            }
           }
         },
         scales: {
           y: {
             beginAtZero: true,
             grid: {
-              color: 'rgba(156, 163, 175, 0.2)'
+              color: 'rgba(156, 163, 175, 0.1)',
+              drawBorder: false
             },
             ticks: {
               callback: function(value) {
-                return '$' + value;
+                return '$' + Number(value).toFixed(0);
+              },
+              font: {
+                size: 10
               }
             }
           },
           x: {
             grid: {
+              display: false
+            },
+            ticks: {
+              font: {
+                size: 10
+              }
+            }
+          }
+        }
+      }
+    });
+  }, [dashboardData]);
+
+  // Initialize goals progress chart
+  const initializeGoalsChart = useCallback(() => {
+    if (!goalsChartRef.current || !dashboardData) return;
+    
+    const ctx = goalsChartRef.current.getContext('2d');
+    if (!ctx) return;
+
+    if (goalsChartInstance.current) {
+      goalsChartInstance.current.destroy();
+    }
+
+    const goalLabels = dashboardData.goals.map(g => g.title.length > 15 ? g.title.substring(0, 15) + '...' : g.title);
+    const progressData = dashboardData.goals.map(g => (g.currentAmount / g.targetAmount) * 100);
+    
+    goalsChartInstance.current = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: goalLabels,
+        datasets: [{
+          data: progressData,
+          backgroundColor: [
+            'rgba(34, 197, 94, 0.8)',
+            'rgba(59, 130, 246, 0.8)',
+            'rgba(168, 85, 247, 0.8)',
+            'rgba(249, 115, 22, 0.8)',
+            'rgba(236, 72, 153, 0.8)'
+          ],
+          borderColor: [
+            'rgba(34, 197, 94, 1)',
+            'rgba(59, 130, 246, 1)',
+            'rgba(168, 85, 247, 1)',
+            'rgba(249, 115, 22, 1)',
+            'rgba(236, 72, 153, 1)'
+          ],
+          borderWidth: 2,
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '60%',
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              usePointStyle: true,
+              padding: 15,
+              font: {
+                size: 11
+              }
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            titleColor: 'white',
+            bodyColor: 'white',
+            borderColor: 'rgba(59, 130, 246, 0.8)',
+            borderWidth: 1,
+            cornerRadius: 8,
+            callbacks: {
+              label: function(context) {
+                return `${context.label}: ${context.parsed.toFixed(1)}%`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }, [dashboardData]);
+
+  // Initialize trend chart
+  const initializeTrendChart = useCallback(() => {
+    if (!trendChartRef.current || !dashboardData) return;
+    
+    const ctx = trendChartRef.current.getContext('2d');
+    if (!ctx) return;
+
+    if (trendChartInstance.current) {
+      trendChartInstance.current.destroy();
+    }
+
+    // Generate sample trend data
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    const incomeData = [5200, 5400, 5300, 5600, 5500, 5800];
+    const expenseData = [3200, 3400, 3100, 3300, 3500, 3200];
+    const savingsData = incomeData.map((income, i) => income - expenseData[i]);
+    
+    trendChartInstance.current = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: months,
+        datasets: [
+          {
+            label: 'Income',
+            data: incomeData,
+            borderColor: 'rgba(34, 197, 94, 1)',
+            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+            borderWidth: 3,
+            fill: false,
+            tension: 0.4,
+            pointBackgroundColor: 'rgba(34, 197, 94, 1)',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          },
+          {
+            label: 'Expenses',
+            data: expenseData,
+            borderColor: 'rgba(239, 68, 68, 1)',
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            borderWidth: 3,
+            fill: false,
+            tension: 0.4,
+            pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          },
+          {
+            label: 'Net Savings',
+            data: savingsData,
+            borderColor: 'rgba(59, 130, 246, 1)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              padding: 15,
+              font: {
+                size: 11,
+                weight: '500'
+              }
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            titleColor: 'white',
+            bodyColor: 'white',
+            borderColor: 'rgba(59, 130, 246, 0.8)',
+            borderWidth: 1,
+            cornerRadius: 8,
+            callbacks: {
+              label: function(context) {
+                return `${context.dataset.label}: $${context.parsed.y.toFixed(0)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(156, 163, 175, 0.1)',
+              drawBorder: false
+            },
+            ticks: {
+              callback: function(value) {
+                return '$' + Number(value).toFixed(0);
+              },
+              font: {
+                size: 10
+              }
+            }
+          },
+          x: {
+            grid: {
+              color: 'rgba(156, 163, 175, 0.1)',
+              drawBorder: false
+            },
+            ticks: {
+              font: {
+                size: 10
+              }
+            }
+          }
+        }
+      }
+    });
+  }, [dashboardData]);
+
+  // Initialize savings breakdown chart
+  const initializeSavingsChart = useCallback(() => {
+    if (!savingsChartRef.current || !dashboardData) return;
+    
+    const ctx = savingsChartRef.current.getContext('2d');
+    if (!ctx) return;
+
+    if (savingsChartInstance.current) {
+      savingsChartInstance.current.destroy();
+    }
+
+    const accounts = dashboardData.accounts.filter(acc => acc.type !== 'checking');
+    const labels = accounts.map(acc => acc.name);
+    const data = accounts.map(acc => acc.balance);
+    
+    savingsChartInstance.current = new Chart(ctx, {
+      type: 'polarArea',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: [
+            'rgba(168, 85, 247, 0.7)',
+            'rgba(34, 197, 94, 0.7)',
+            'rgba(249, 115, 22, 0.7)',
+            'rgba(59, 130, 246, 0.7)'
+          ],
+          borderColor: [
+            'rgba(168, 85, 247, 1)',
+            'rgba(34, 197, 94, 1)',
+            'rgba(249, 115, 22, 1)',
+            'rgba(59, 130, 246, 1)'
+          ],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              usePointStyle: true,
+              padding: 15,
+              font: {
+                size: 11
+              }
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            titleColor: 'white',
+            bodyColor: 'white',
+            borderColor: 'rgba(168, 85, 247, 0.8)',
+            borderWidth: 1,
+            cornerRadius: 8,
+            callbacks: {
+              label: function(context) {
+                return `${context.label}: $${context.parsed.toFixed(2)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          r: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(156, 163, 175, 0.2)'
+            },
+            ticks: {
               display: false
             }
           }
@@ -232,6 +547,16 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
       }
     });
   }, [dashboardData]);
+
+  // Initialize all charts
+  useEffect(() => {
+    if (dashboardData) {
+      initializeSpendingChart();
+      initializeGoalsChart();
+      initializeTrendChart();
+      initializeSavingsChart();
+    }
+  }, [dashboardData, initializeSpendingChart, initializeGoalsChart, initializeTrendChart, initializeSavingsChart]);
 
   // Initialize component
   useEffect(() => {
@@ -370,6 +695,19 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
   // Get investment account
   const investmentAccount = dashboardData?.accounts.find(acc => acc.type === 'investment');
 
+  const toggleChartExpansion = (chartName: string) => {
+    setExpandedChart(expandedChart === chartName ? null : chartName);
+  };
+
+  const formatCurrency = (amount: number, hideValue = false) => {
+    if (hideValue) return '****';
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2
+    }).format(amount);
+  };
+
   if (isDataLoading) {
     return (
       <div className="container mx-auto px-4 md:px-6 py-6">
@@ -439,198 +777,351 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
 
   return (
     <div className="container mx-auto px-4 md:px-6 py-6 space-y-8">
-      {/* Welcome Header */}
-      <div className="flex items-center justify-between bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl p-6 text-white">
-        <div>
-          <h1 className="text-2xl font-bold mb-2">Welcome back, {dashboardData.name}!</h1>
-          <p className="text-primary-100">Here&apos;s your financial overview for today</p>
-        </div>
-        <div className="flex items-center space-x-4">
-          <button 
-            onClick={refreshData}
-            className={`p-3 bg-white/20 hover:bg-white/30 rounded-full transition-all duration-300 ${refreshing ? 'animate-spin' : ''}`}
-          >
-            <FontAwesomeIcon icon={faSync} className="text-white" />
-          </button>
-          <div className="text-right">
-            <p className="text-sm text-primary-100">Total Points</p>
-            <p className="text-xl font-bold flex items-center">
-              <FontAwesomeIcon icon={faStar} className="text-yellow-300 mr-1" />
-              {points}
-            </p>
+      {/* Enhanced Welcome Header with Privacy Toggle */}
+      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-8 text-white shadow-2xl">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-purple-100 bg-clip-text text-transparent">
+              Welcome back, {dashboardData.name}!
+            </h1>
+            <p className="text-purple-100 text-lg">Here's your financial overview for {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</p>
+          </div>
+          <div className="flex items-center space-x-6">
+            <button 
+              onClick={() => setHideBalance(!hideBalance)}
+              className="p-3 bg-white/20 hover:bg-white/30 rounded-xl transition-all duration-300 backdrop-blur-sm"
+              title={hideBalance ? 'Show balance' : 'Hide balance'}
+            >
+              <FontAwesomeIcon icon={hideBalance ? faEyeSlash : faEye} className="text-white text-lg" />
+            </button>
+            <button 
+              onClick={refreshData}
+              className={`p-3 bg-white/20 hover:bg-white/30 rounded-xl transition-all duration-300 backdrop-blur-sm ${refreshing ? 'animate-spin' : ''}`}
+            >
+              <FontAwesomeIcon icon={faSync} className="text-white text-lg" />
+            </button>
+            <div className="text-right bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+              <p className="text-sm text-purple-100">Total Points</p>
+              <p className="text-2xl font-bold flex items-center">
+                <FontAwesomeIcon icon={faStar} className="text-yellow-300 mr-2" />
+                {points}
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* AI Assistant Panel */}
-      <div className={`card mb-8 relative border-l-4 border-primary-500 overflow-hidden ${showAiPanel ? '' : 'hidden'}`}>
-        <div className="absolute top-0 left-0 w-full h-1 gradient-bg"></div>
-        <div className="flex items-center mb-4">
-          <div className="w-12 h-12 gradient-bg rounded-full flex items-center justify-center mr-4 shadow-lg">
-            <FontAwesomeIcon icon={faRobot} className="text-white text-xl" />
+      {/* Enhanced Tab Navigation */}
+      <div className="bg-white rounded-2xl shadow-lg p-2">
+        <div className="flex space-x-2">
+          {[
+            { id: 'overview', label: 'Overview', icon: faChartPie },
+            { id: 'spending', label: 'Spending', icon: faCreditCard },
+            { id: 'goals', label: 'Goals', icon: faTrophy },
+            { id: 'trends', label: 'Trends', icon: faTrendUp }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
+                activeTab === tab.id
+                  ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <FontAwesomeIcon icon={tab.icon} />
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Enhanced AI Assistant Panel */}
+      <div className={`bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-3xl p-6 shadow-xl ${showAiPanel ? '' : 'hidden'}`}>
+        <div className="flex items-center mb-6">
+          <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
+            <FontAwesomeIcon icon={faRobot} className="text-white text-2xl" />
           </div>
           <div>
-            <h3 className="font-semibold text-lg text-gray-800">AI Financial Advisor</h3>
-            <p className="text-gray-600 text-sm">Ask me anything about your finances</p>
+            <h3 className="font-bold text-xl text-gray-800">AI Financial Advisor</h3>
+            <p className="text-gray-600">Your personalized finance assistant</p>
           </div>
         </div>
-        <div 
-          id="aiResponse" 
-          className="bg-slate-50 rounded-lg p-4 mb-4 min-h-[100px] flex items-center justify-center text-gray-500"
-        >
+        <div className="bg-white rounded-2xl p-6 mb-4 min-h-[150px] shadow-inner border border-purple-100">
           {isLoading ? (
-            <div className="text-center">
-              <FontAwesomeIcon icon={faSpinner} spin className="text-3xl mb-2 text-primary-500" />
-              <p>Processing your request...</p>
+            <div className="text-center py-8">
+              <div className="inline-flex items-center space-x-3">
+                <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-lg font-medium text-purple-600">Analyzing your finances...</span>
+              </div>
             </div>
           ) : aiResponse ? (
             <div dangerouslySetInnerHTML={{ __html: aiResponse }} />
           ) : (
-            <div className="text-center">
-              <FontAwesomeIcon icon={faMicrophoneAlt} className="text-3xl mb-2 pulse-animation text-primary-500" />
-              <p>Listening... Ask me about your budget, savings, or investments</p>
+            <div className="text-center py-8">
+              <FontAwesomeIcon icon={faMicrophoneAlt} className="text-5xl mb-4 text-purple-400" />
+              <p className="text-lg text-gray-600">Ready to help with your financial questions!</p>
             </div>
           )}
         </div>
-        <div className="flex space-x-2">
+        <div className="flex space-x-3">
           <input 
             type="text" 
-            id="aiInput" 
             value={aiInput}
             onChange={(e) => setAiInput(e.target.value)}
-            placeholder="Type your question here..." 
-            className="input flex-1 rounded-r-none focus:z-10"
+            placeholder="Ask about your budget, investments, or financial goals..." 
+            className="flex-1 p-4 border border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
+            onKeyPress={(e) => e.key === 'Enter' && askAI()}
           />
           <button 
             onClick={askAI} 
-            className="btn btn-primary rounded-l-none"
+            className="px-6 py-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 shadow-lg"
           >
             <FontAwesomeIcon icon={faPaperPlane} />
           </button>
         </div>
       </div>
 
-      {/* Dashboard Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Balance Card */}
-        <div className="bg-white rounded-xl shadow-lg p-6 card-hover">
+      {/* Enhanced Financial Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        {/* Total Balance Card */}
+        <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl p-6 border border-green-200 shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-gray-600 font-medium">Total Balance</h3>
-            <FontAwesomeIcon icon={faWallet} className="text-green-500 text-xl" />
+            <div className="w-14 h-14 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+              <FontAwesomeIcon icon={faWallet} className="text-white text-xl" />
+            </div>
+            <div className="flex items-center space-x-2 text-green-600">
+              <FontAwesomeIcon icon={faArrowUp} className="text-sm" />
+              <span className="text-sm font-medium">+5.2%</span>
+            </div>
           </div>
-          <p className="text-3xl font-bold text-gray-800">${totalBalance.toFixed(2)}</p>
-          <p className="text-green-500 text-sm mt-2">+5.2% from last month</p>
+          <h3 className="text-green-700 font-semibold mb-2">Total Balance</h3>
+          <p className="text-3xl font-bold text-green-800 mb-1">
+            {formatCurrency(totalBalance, hideBalance)}
+          </p>
+          <p className="text-green-600 text-sm">from last month</p>
         </div>
 
-        {/* Monthly Spending */}
-        <div className="card card-hover border-t-4 border-danger-500">
+        {/* Monthly Spending Card */}
+        <div className="bg-gradient-to-br from-red-50 to-rose-100 rounded-2xl p-6 border border-red-200 shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">Monthly Spending</h3>
-            <div className="w-10 h-10 rounded-full bg-danger-100 flex items-center justify-center">
-              <FontAwesomeIcon icon={faCreditCard} className="text-danger-600" />
+            <div className="w-14 h-14 bg-gradient-to-r from-red-500 to-rose-600 rounded-xl flex items-center justify-center shadow-lg">
+              <FontAwesomeIcon icon={faCreditCard} className="text-white text-xl" />
+            </div>
+            <div className="flex items-center space-x-2 text-red-600">
+              <FontAwesomeIcon icon={faArrowUp} className="text-sm" />
+              <span className="text-sm font-medium">+12%</span>
             </div>
           </div>
-          <p className="text-3xl font-bold mb-1 text-gray-800">${monthlySpending.toFixed(2)}</p>
-          <div className="flex items-center text-sm">
-            <span className="badge badge-danger">+$340</span>
-            <span className="text-gray-500 ml-2">from last month</span>
-          </div>
+          <h3 className="text-red-700 font-semibold mb-2">Monthly Spending</h3>
+          <p className="text-3xl font-bold text-red-800 mb-1">
+            {formatCurrency(monthlySpending, hideBalance)}
+          </p>
+          <p className="text-red-600 text-sm">vs budget limit</p>
         </div>
         
-        {/* Savings Goal */}
-        <div className="card card-hover border-t-4 border-success-500">
+        {/* Savings Goal Card */}
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-2xl p-6 border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">{userGoal.description || 'Emergency Fund'}</h3>
-            <div className="w-10 h-10 rounded-full bg-success-100 flex items-center justify-center">
-              <FontAwesomeIcon icon={faPiggyBank} className="text-success-600" />
+            <div className="w-14 h-14 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <FontAwesomeIcon icon={faPiggyBank} className="text-white text-xl" />
+            </div>
+            <div className="text-blue-600 text-sm font-medium">
+              {primaryGoal ? `${Math.round((primaryGoal.currentAmount / primaryGoal.targetAmount) * 100)}%` : '0%'}
             </div>
           </div>
-          <p className="text-3xl font-bold mb-1 text-gray-800">${primaryGoal ? primaryGoal.currentAmount.toFixed(2) : '0.00'}</p>
-          <div className="w-full bg-gray-200 rounded-full h-2.5 mb-1 overflow-hidden">
-            <div className="bg-success-500 h-2.5 rounded-full progress-bar" style={{ width: primaryGoal ? `${(primaryGoal.currentAmount / primaryGoal.targetAmount) * 100}%` : '0%' }}></div>
+          <h3 className="text-blue-700 font-semibold mb-2">{userGoal.description || 'Emergency Fund'}</h3>
+          <p className="text-3xl font-bold text-blue-800 mb-2">
+            {formatCurrency(primaryGoal ? primaryGoal.currentAmount : 0, hideBalance)}
+          </p>
+          <div className="w-full bg-blue-200 rounded-full h-3 mb-2 overflow-hidden">
+            <div 
+              className="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-1000 ease-out" 
+              style={{ width: primaryGoal ? `${(primaryGoal.currentAmount / primaryGoal.targetAmount) * 100}%` : '0%' }}
+            ></div>
           </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">${primaryGoal ? primaryGoal.targetAmount.toFixed(2) : '0.00'} target</span>
-            <span className="badge badge-success">{primaryGoal ? `${Math.round((primaryGoal.currentAmount / primaryGoal.targetAmount) * 100)}%` : '0%'}</span>
-          </div>
+          <p className="text-blue-600 text-sm">
+            {formatCurrency(primaryGoal ? primaryGoal.targetAmount : 0, hideBalance)} target
+          </p>
         </div>
         
-        {/* Investment Portfolio */}
-        <div className="card card-hover border-t-4 border-secondary-500">
+        {/* Investment Portfolio Card */}
+        <div className="bg-gradient-to-br from-purple-50 to-violet-100 rounded-2xl p-6 border border-purple-200 shadow-lg hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-700">Investments</h3>
-            <div className="w-10 h-10 rounded-full bg-secondary-100 flex items-center justify-center">
-              <FontAwesomeIcon icon={faChartLine} className="text-secondary-600" />
+            <div className="w-14 h-14 bg-gradient-to-r from-purple-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg">
+              <FontAwesomeIcon icon={faChartLine} className="text-white text-xl" />
+            </div>
+            <div className="flex items-center space-x-2 text-purple-600">
+              <FontAwesomeIcon icon={faArrowUp} className="text-sm" />
+              <span className="text-sm font-medium">+8.4%</span>
             </div>
           </div>
-          <p className="text-3xl font-bold mb-1 text-gray-800">${investmentAccount ? investmentAccount.balance.toFixed(2) : '0.00'}</p>
-          <div className="flex items-center text-sm">
-            <span className="badge badge-secondary">+8.4%</span>
-            <span className="text-gray-500 ml-2">this month</span>
+          <h3 className="text-purple-700 font-semibold mb-2">Investments</h3>
+          <p className="text-3xl font-bold text-purple-800 mb-1">
+            {formatCurrency(investmentAccount ? investmentAccount.balance : 0, hideBalance)}
+          </p>
+          <p className="text-purple-600 text-sm">this month</p>
+        </div>
+      </div>
+
+      {/* Enhanced Charts Section */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        {/* Spending Analysis Chart */}
+        <div className={`bg-white rounded-3xl shadow-xl p-6 border border-gray-100 transition-all duration-300 ${expandedChart === 'spending' ? 'xl:col-span-3' : 'xl:col-span-2'}`}>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-gray-800 flex items-center">
+              <FontAwesomeIcon icon={faChartPie} className="text-indigo-500 mr-3" />
+              Spending Analysis
+            </h3>
+            <div className="flex items-center space-x-3">
+              <select 
+                value={selectedTimeframe}
+                onChange={(e) => setSelectedTimeframe(e.target.value)}
+                className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              >
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="quarter">This Quarter</option>
+                <option value="year">This Year</option>
+              </select>
+              <button 
+                onClick={() => toggleChartExpansion('spending')}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <FontAwesomeIcon icon={expandedChart === 'spending' ? faCompress : faExpand} className="text-gray-600" />
+              </button>
+            </div>
+          </div>
+          <div style={{ height: expandedChart === 'spending' ? '400px' : '280px' }}>
+            <canvas ref={spendingChartRef}></canvas>
+          </div>
+        </div>
+
+        {/* Goals Progress Chart */}
+        <div className={`bg-white rounded-3xl shadow-xl p-6 border border-gray-100 transition-all duration-300 ${expandedChart === 'goals' ? 'xl:col-span-3' : ''}`}>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-gray-800 flex items-center">
+              <FontAwesomeIcon icon={faTrophy} className="text-yellow-500 mr-3" />
+              Goals Progress
+            </h3>
+            <button 
+              onClick={() => toggleChartExpansion('goals')}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <FontAwesomeIcon icon={expandedChart === 'goals' ? faCompress : faExpand} className="text-gray-600" />
+            </button>
+          </div>
+          <div style={{ height: expandedChart === 'goals' ? '400px' : '280px' }}>
+            <canvas ref={goalsChartRef}></canvas>
           </div>
         </div>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Spending Analysis */}
-        <div className="lg:col-span-2 card card-hover">
+      {/* Additional Charts Row */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        {/* Financial Trends Chart */}
+        <div className={`bg-white rounded-3xl shadow-xl p-6 border border-gray-100 transition-all duration-300 ${expandedChart === 'trends' ? 'xl:col-span-2' : ''}`}>
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-700 flex items-center">
-              <FontAwesomeIcon icon={faChartPie} className="text-primary-500 mr-2" />
-              Spending Analysis
+            <h3 className="text-xl font-bold text-gray-800 flex items-center">
+              <FontAwesomeIcon icon={faTrendUp} className="text-green-500 mr-3" />
+              Financial Trends
             </h3>
-            <select className="input py-1 px-3 text-sm">
-              <option>This Month</option>
-              <option>Last Month</option>
-              <option>Last 3 Months</option>
-            </select>
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+                <button className="px-3 py-1 text-xs font-medium bg-white rounded-md shadow-sm">6M</button>
+                <button className="px-3 py-1 text-xs font-medium text-gray-600">1Y</button>
+                <button className="px-3 py-1 text-xs font-medium text-gray-600">All</button>
+              </div>
+              <button 
+                onClick={() => toggleChartExpansion('trends')}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <FontAwesomeIcon icon={expandedChart === 'trends' ? faCompress : faExpand} className="text-gray-600" />
+              </button>
+            </div>
           </div>
-          <canvas ref={spendingChartRef} width="400" height="200"></canvas>
+          <div style={{ height: expandedChart === 'trends' ? '400px' : '300px' }}>
+            <canvas ref={trendChartRef}></canvas>
+          </div>
         </div>
 
-        {/* Smart Alerts */}
-        <div className="card card-hover">
+        {/* Savings Breakdown Chart */}
+        <div className={`bg-white rounded-3xl shadow-xl p-6 border border-gray-100 transition-all duration-300 ${expandedChart === 'savings' ? 'xl:col-span-2' : ''}`}>
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-700 flex items-center">
-              <FontAwesomeIcon icon={faBell} className="text-primary-500 mr-2" />
-              Smart Alerts
+            <h3 className="text-xl font-bold text-gray-800 flex items-center">
+              <FontAwesomeIcon icon={faPiggyBank} className="text-purple-500 mr-3" />
+              Savings Breakdown
             </h3>
-            <span className="badge badge-danger">3 New</span>
+            <button 
+              onClick={() => toggleChartExpansion('savings')}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <FontAwesomeIcon icon={expandedChart === 'savings' ? faCompress : faExpand} className="text-gray-600" />
+            </button>
           </div>
-          
-          <div className="space-y-4">
-            <div className="border-l-4 border-danger-500 bg-danger-50 p-4 rounded-lg shadow-sm hover:shadow transition-all duration-300">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <FontAwesomeIcon icon={faExclamationTriangle} className="text-danger-600" />
-                </div>
-                <div className="ml-3">
-                  <h4 className="text-sm font-medium text-danger-800">Dining budget exceeded</h4>
-                  <p className="text-sm text-danger-700 mt-1">You&apos;re 12% over your dining budget this month</p>
-                </div>
+          <div style={{ height: expandedChart === 'savings' ? '400px' : '300px' }}>
+            <canvas ref={savingsChartRef}></canvas>
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Smart Alerts */}
+      <div className="bg-white rounded-3xl shadow-xl p-6 border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-xl font-bold text-gray-800 flex items-center">
+            <FontAwesomeIcon icon={faBell} className="text-orange-500 mr-3" />
+            Smart Financial Insights
+          </h3>
+          <div className="flex items-center space-x-2">
+            <span className="px-3 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded-full">3 New</span>
+            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <FontAwesomeIcon icon={faFilter} className="text-gray-600" />
+            </button>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-gradient-to-br from-red-50 to-pink-50 border-l-4 border-red-500 p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="flex items-start">
+              <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-600" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-red-800 mb-2">Budget Alert</h4>
+                <p className="text-red-700 text-sm mb-3">You're 12% over your dining budget this month</p>
+                <button className="text-red-600 text-xs font-medium hover:text-red-800 transition-colors">
+                  View Details →
+                </button>
               </div>
             </div>
-            <div className="border-l-4 border-secondary-500 bg-secondary-50 p-4 rounded-lg shadow-sm hover:shadow transition-all duration-300">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <FontAwesomeIcon icon={faLightbulb} className="text-secondary-600" />
-                </div>
-                <div className="ml-3">
-                  <h4 className="text-sm font-medium text-secondary-800">Investment Opportunity</h4>
-                  <p className="text-sm text-secondary-700 mt-1">Tech stocks are down 3% - good buying opportunity</p>
-                </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="flex items-start">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                <FontAwesomeIcon icon={faLightbulb} className="text-blue-600" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-blue-800 mb-2">Investment Tip</h4>
+                <p className="text-blue-700 text-sm mb-3">Tech stocks down 3% - potential buying opportunity</p>
+                <button className="text-blue-600 text-xs font-medium hover:text-blue-800 transition-colors">
+                  Learn More →
+                </button>
               </div>
             </div>
-            <div className="border-l-4 border-success-500 bg-success-50 p-4 rounded-lg shadow-sm hover:shadow transition-all duration-300">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <FontAwesomeIcon icon={faCheckCircle} className="text-success-600" />
-                </div>
-                <div className="ml-3">
-                  <h4 className="text-sm font-medium text-success-800">Goal Achievement</h4>
-                  <p className="text-sm text-success-700 mt-1">You&apos;re on track to reach your emergency fund goal!</p>
-                </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-l-4 border-green-500 p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="flex items-start">
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                <FontAwesomeIcon icon={faCheckCircle} className="text-green-600" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-green-800 mb-2">Goal Progress</h4>
+                <p className="text-green-700 text-sm mb-3">On track to reach emergency fund goal by December!</p>
+                <button className="text-green-600 text-xs font-medium hover:text-green-800 transition-colors">
+                  View Progress →
+                </button>
               </div>
             </div>
           </div>
