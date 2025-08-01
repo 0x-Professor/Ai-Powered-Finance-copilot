@@ -4,17 +4,120 @@
 
 :root {
   --font-inter: 'Inter', sans-serif;
+  --gradient-primary: linear-gradient(135deg, #0ea5e9 0%, #6d28d9 100%);
+  --gradient-secondary: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+  --gradient-success: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
 body {
   font-family: var(--font-inter);
+  @apply bg-gray-50;
 }
 
-/* Custom styles from original project */
-.gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-.card-hover { transition: all 0.3s ease; }
-.card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-.pulse-animation { animation: pulse 2s infinite; }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-.voice-active { background: linear-gradient(45deg, #ff6b6b, #4ecdc4); }
-.progress-bar { transition: width 0.5s ease-in-out; }
+/* Custom styles */
+.gradient-bg { background: var(--gradient-primary); }
+.gradient-secondary { background: var(--gradient-secondary); }
+.gradient-success { background: var(--gradient-success); }
+.gradient-warning { background: var(--gradient-warning); }
+.gradient-danger { background: var(--gradient-danger); }
+
+/* Card styles */
+.card {
+  @apply bg-white rounded-xl shadow-card p-5 transition-all duration-300;
+}
+
+.card-hover { 
+  @apply transition-all duration-300; 
+}
+
+.card-hover:hover { 
+  @apply transform -translate-y-1 shadow-card-hover; 
+}
+
+/* Animation styles */
+.pulse-animation { 
+  animation: pulse 2s infinite; 
+}
+
+@keyframes pulse { 
+  0%, 100% { opacity: 1; } 
+  50% { opacity: 0.7; } 
+}
+
+.voice-active { 
+  background: var(--gradient-secondary);
+  @apply shadow-lg;
+}
+
+.progress-bar { 
+  @apply transition-all duration-500 ease-in-out; 
+}
+
+/* Button styles */
+.btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-300 shadow-button;
+}
+
+.btn:hover {
+  @apply shadow-button-hover transform -translate-y-0.5;
+}
+
+.btn-primary {
+  @apply bg-primary-600 text-white hover:bg-primary-700;
+}
+
+.btn-secondary {
+  @apply bg-secondary-600 text-white hover:bg-secondary-700;
+}
+
+.btn-success {
+  @apply bg-success-600 text-white hover:bg-success-700;
+}
+
+.btn-warning {
+  @apply bg-warning-600 text-white hover:bg-warning-700;
+}
+
+.btn-danger {
+  @apply bg-danger-600 text-white hover:bg-danger-700;
+}
+
+.btn-outline {
+  @apply border-2 bg-transparent;
+}
+
+.btn-outline-primary {
+  @apply border-primary-600 text-primary-600 hover:bg-primary-50;
+}
+
+/* Input styles */
+.input {
+  @apply px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all duration-300;
+}
+
+/* Badge styles */
+.badge {
+  @apply px-2 py-1 text-xs font-semibold rounded-full;
+}
+
+.badge-primary {
+  @apply bg-primary-100 text-primary-800;
+}
+
+.badge-secondary {
+  @apply bg-secondary-100 text-secondary-800;
+}
+
+.badge-success {
+  @apply bg-success-100 text-success-800;
+}
+
+.badge-warning {
+  @apply bg-warning-100 text-warning-800;
+}
+
+.badge-danger {
+  @apply bg-danger-100 text-danger-800;
+}
