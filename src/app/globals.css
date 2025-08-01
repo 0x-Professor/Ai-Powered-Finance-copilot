@@ -1,26 +1,20 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-inter: 'Inter', sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter);
 }
+
+/* Custom styles from original project */
+.gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.card-hover { transition: all 0.3s ease; }
+.card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+.pulse-animation { animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+.voice-active { background: linear-gradient(45deg, #ff6b6b, #4ecdc4); }
+.progress-bar { transition: width 0.5s ease-in-out; }
