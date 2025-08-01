@@ -2,18 +2,20 @@
 
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRobot, faMicrophone, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faRobot, faMicrophone, faUser, faMicrophoneSlash } from '@fortawesome/free-solid-svg-icons';
 
 interface HeaderProps {
-  // Add any props if needed
+  onVoiceToggle?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = () => {
+const Header: React.FC<HeaderProps> = ({ onVoiceToggle }) => {
   const [isVoiceActive, setIsVoiceActive] = useState(false);
 
   const toggleVoice = () => {
     setIsVoiceActive(!isVoiceActive);
-    // Additional voice functionality will be added later
+    if (onVoiceToggle) {
+      onVoiceToggle();
+    }
   };
 
   return (
@@ -29,8 +31,8 @@ const Header: React.FC<HeaderProps> = () => {
               onClick={toggleVoice}
               className={`${isVoiceActive ? 'voice-active' : 'bg-white/20 hover:bg-white/30'} px-4 py-2 rounded-full transition-all duration-300`}
             >
-              <FontAwesomeIcon icon={faMicrophone} className="mr-2" />
-              Ask AI
+              <FontAwesomeIcon icon={isVoiceActive ? faMicrophoneSlash : faMicrophone} className="mr-2" />
+              {isVoiceActive ? 'Stop Listening' : 'Ask AI'}
             </button>
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
               <FontAwesomeIcon icon={faUser} />

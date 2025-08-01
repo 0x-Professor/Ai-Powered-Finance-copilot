@@ -6,6 +6,7 @@ import {
   faRocket, faBullseye, faBrain, faUniversity, 
   faShieldAlt, faCar, faHome, faChartLine 
 } from '@fortawesome/free-solid-svg-icons';
+import { generateFinancialAnalysis, FinancialData } from '../utils/geminiApi';
 
 interface OnboardingFlowProps {
   onDashboardLaunch: (goal: {
@@ -73,7 +74,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
     
     try {
       // Define current spending data
-      const spendingData = {
+      const financialData: FinancialData = {
         income: 5200,
         expenses: {
           dining: 850,
@@ -83,50 +84,21 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
           bills: 640,
           other: 300
         },
-        savings: 1200
+        savings: 1200,
+        goal: {
+          description: userGoal.description,
+          amount: userGoal.amount,
+          date: userGoal.date
+        }
       };
       
-      // Call Gemini API for analysis
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-goog-api-key': 'AIzaSyB2PMyOZzGVCinCR4d6TuDOD9ux1j2plXY'
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: `You are an AI financial advisor. The user has the following financial data:\n\n` +
-                        `- Monthly income: $${spendingData.income}\n` +
-                        `- Monthly expenses: $${spendingData.expenses.dining + spendingData.expenses.transport + 
-                          spendingData.expenses.shopping + spendingData.expenses.entertainment + 
-                          spendingData.expenses.bills + spendingData.expenses.other} ` +
-                        `(Dining: $${spendingData.expenses.dining}, Transport: $${spendingData.expenses.transport}, ` +
-                        `Shopping: $${spendingData.expenses.shopping}, Entertainment: $${spendingData.expenses.entertainment}, ` +
-                        `Bills: $${spendingData.expenses.bills}, Other: $${spendingData.expenses.other})\n` +
-                        `- Savings goal: ${userGoal.description} - $${userGoal.amount.toLocaleString()}\n` +
-                        `- Target date: ${userGoal.date}\n\n` +
-                        `Analyze their spending patterns and provide a detailed plan to achieve their savings goal. Include:\n` +
-                        `1. Whether the goal is achievable by the target date\n` +
-                        `2. Specific budget adjustments needed (with dollar amounts)\n` +
-                        `3. Monthly savings target\n` +
-                        `4. Potential obstacles and solutions\n\n` +
-                        `Format your response in clear sections with specific numbers and actionable advice.`
-                }
-              ]
-            }
-          ]
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      const aiText = data.candidates[0].content.parts[0].text;
+      // Call Gemini API through our utility function
+      const aiText = await generateFinancialAnalysis(
+        financialData,
+        userGoal.description,
+        userGoal.amount,
+        userGoal.date
+      );
       
       // Set the AI analysis
       setAiAnalysis(aiText);
