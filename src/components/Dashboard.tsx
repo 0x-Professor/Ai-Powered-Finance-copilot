@@ -334,15 +334,16 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
   };
 
   return (
-    <div>
+    <div className="container mx-auto px-4 md:px-6 py-6">
       {/* AI Assistant Panel */}
-      <div className={`bg-white rounded-xl shadow-lg p-6 mb-8 card-hover ${showAiPanel ? '' : 'hidden'}`}>
+      <div className={`card mb-8 relative border-l-4 border-primary-500 overflow-hidden ${showAiPanel ? '' : 'hidden'}`}>
+        <div className="absolute top-0 left-0 w-full h-1 gradient-bg"></div>
         <div className="flex items-center mb-4">
-          <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mr-4">
+          <div className="w-12 h-12 gradient-bg rounded-full flex items-center justify-center mr-4 shadow-lg">
             <FontAwesomeIcon icon={faRobot} className="text-white text-xl" />
           </div>
           <div>
-            <h3 className="font-semibold text-lg">AI Financial Advisor</h3>
+            <h3 className="font-semibold text-lg text-gray-800">AI Financial Advisor</h3>
             <p className="text-gray-600 text-sm">Ask me anything about your finances</p>
           </div>
         </div>
@@ -352,14 +353,14 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
         >
           {isLoading ? (
             <div className="text-center">
-              <FontAwesomeIcon icon={faSpinner} spin className="text-3xl mb-2" />
+              <FontAwesomeIcon icon={faSpinner} spin className="text-3xl mb-2 text-primary-500" />
               <p>Processing your request...</p>
             </div>
           ) : aiResponse ? (
             <div dangerouslySetInnerHTML={{ __html: aiResponse }} />
           ) : (
             <div className="text-center">
-              <FontAwesomeIcon icon={faMicrophoneAlt} className="text-3xl mb-2 pulse-animation" />
+              <FontAwesomeIcon icon={faMicrophoneAlt} className="text-3xl mb-2 pulse-animation text-primary-500" />
               <p>Listening... Ask me about your budget, savings, or investments</p>
             </div>
           )}
@@ -371,11 +372,11 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
             value={aiInput}
             onChange={(e) => setAiInput(e.target.value)}
             placeholder="Type your question here..." 
-            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="input flex-1 rounded-r-none focus:z-10"
           />
           <button 
             onClick={askAI} 
-            className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg transition-colors"
+            className="btn btn-primary rounded-l-none"
           >
             <FontAwesomeIcon icon={faPaperPlane} />
           </button>
