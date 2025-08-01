@@ -13,7 +13,7 @@
 
 body {
   font-family: var(--font-inter);
-  @apply bg-gray-50;
+  @apply bg-white;
 }
 
 /* Custom styles */

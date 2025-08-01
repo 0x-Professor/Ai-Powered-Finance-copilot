@@ -350,7 +350,7 @@ Dashboard.displayName = 'Dashboard';
         </div>
         <div 
           id="aiResponse" 
-          className="bg-gray-50 rounded-lg p-4 mb-4 min-h-[100px] flex items-center justify-center text-gray-500"
+          className="bg-slate-50 rounded-lg p-4 mb-4 min-h-[100px] flex items-center justify-center text-gray-500"
         >
           {isLoading ? (
             <div className="text-center">
@@ -526,7 +526,7 @@ Dashboard.displayName = 'Dashboard';
           </div>
           
           <div className="space-y-6">
-            <div className="p-4 bg-gray-50 rounded-xl hover:shadow-md transition-all duration-300">
+            <div className="p-4 bg-slate-50 rounded-xl hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center">
                   <div className="w-8 h-8 rounded-full bg-warning-100 flex items-center justify-center mr-3">
@@ -551,7 +551,7 @@ Dashboard.displayName = 'Dashboard';
               </div>
             </div>
             
-            <div className="p-4 bg-gray-50 rounded-xl hover:shadow-md transition-all duration-300">
+            <div className="p-4 bg-slate-50 rounded-xl hover:shadow-md transition-all duration-300">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center">
                   <div className="w-8 h-8 rounded-full bg-secondary-100 flex items-center justify-center mr-3">
