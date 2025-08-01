@@ -742,3 +742,18 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
             <button 
               onClick={exportData}
               className="flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md">
+              <div className="w-12 h-12 rounded-full gradient-warning flex items-center justify-center mb-3 shadow-md">
+                <FontAwesomeIcon icon={faDownload} className="text-white" />
+              </div>
+              <span className="text-sm font-medium text-gray-800">Export Data</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+Dashboard.displayName = 'Dashboard';
+
+export default Dashboard;
