@@ -12,7 +12,7 @@ export default function Home() {
     amount: number;
     date: string;
   }>({ description: '', amount: 0, date: '' });
-  const dashboardRef = useRef<any>(null);
+  const dashboardRef = useRef<{ startListening: () => void }>(null);
 
   // Function to handle dashboard launch
   const handleDashboardLaunch = (goal: {
