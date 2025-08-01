@@ -6,7 +6,7 @@ import {
   faWallet, faCreditCard, faPiggyBank, faChartLine, faExclamationTriangle,
   faLightbulb, faCheckCircle, faCoffee, faUtensils, faDollarSign, faUniversity,
   faCalculator, faChartPie, faDownload, faMicrophone, faRobot, faPaperPlane,
-  faMicrophoneAlt, faSpinner, faTrophy
+  faMicrophoneAlt, faSpinner, faTrophy, faBell, faStar, faBolt
 } from '@fortawesome/free-solid-svg-icons';
 import { Chart, registerables } from 'chart.js';
 import { getFinancialAdvice, FinancialData } from '../utils/geminiApi';

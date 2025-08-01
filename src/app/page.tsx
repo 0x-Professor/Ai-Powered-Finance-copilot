@@ -8,10 +8,10 @@ import Dashboard from '@/components/Dashboard';
 export default function Home() {
   const [showDashboard, setShowDashboard] = useState(false);
   const [userGoal, setUserGoal] = useState<{
-    description?: string;
-    amount?: number;
-    date?: string;
-  }>({});
+    description: string;
+    amount: number;
+    date: string;
+  }>({ description: '', amount: 0, date: '' });
   const dashboardRef = useRef<any>(null);
 
   // Function to handle dashboard launch
