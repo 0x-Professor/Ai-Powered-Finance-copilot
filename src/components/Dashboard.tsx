@@ -567,8 +567,7 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
       </div>
     </div>
   );
-};
-
 });
+
 
 export default Dashboard;
