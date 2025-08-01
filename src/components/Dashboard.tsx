@@ -9,6 +9,7 @@ import {
   faMicrophoneAlt, faSpinner, faTrophy
 } from '@fortawesome/free-solid-svg-icons';
 import { Chart, registerables } from 'chart.js';
+import { getFinancialAdvice, FinancialData } from '../utils/geminiApi';
 
 // Register Chart.js components
 Chart.register(...registerables);
@@ -121,7 +122,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userGoal }) => {
     
     try {
       // Define current spending data
-      const spendingData = {
+      const financialData: FinancialData = {
         income: 5200,
         expenses: {
           dining: 850,
@@ -131,47 +132,13 @@ const Dashboard: React.FC<DashboardProps> = ({ userGoal }) => {
           bills: 640,
           other: 300
         },
-        savings: 1200
+        savings: 1200,
+        goal: userGoal,
+        riskProfile: 'Moderate'
       };
       
-      // Call Gemini API
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-goog-api-key': 'AIzaSyB2PMyOZzGVCinCR4d6TuDOD9ux1j2plXY'
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: `You are an AI financial advisor. The user has the following financial data:\n\n` +
-                        `- Monthly income: $${spendingData.income}\n` +
-                        `- Monthly expenses: $${spendingData.expenses.dining + spendingData.expenses.transport + 
-                          spendingData.expenses.shopping + spendingData.expenses.entertainment + 
-                          spendingData.expenses.bills + spendingData.expenses.other} ` +
-                        `(Dining: $${spendingData.expenses.dining}, Transport: $${spendingData.expenses.transport}, ` +
-                        `Shopping: $${spendingData.expenses.shopping}, Entertainment: $${spendingData.expenses.entertainment}, ` +
-                        `Bills: $${spendingData.expenses.bills}, Other: $${spendingData.expenses.other})\n` +
-                        `- Savings goal: ${userGoal.description || 'Emergency Fund'} - $${userGoal.amount?.toLocaleString() || '5,000'}\n` +
-                        `- Available to invest: $1,200\n` +
-                        `- Risk profile: Moderate\n\n` +
-                        `Based on this information, provide personalized financial advice for this question: ${aiInput}\n\n` +
-                        `Keep your response concise and actionable, with specific numbers and recommendations.`
-                }
-              ]
-            }
-          ]
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      const aiText = data.candidates[0].content.parts[0].text;
+      // Call Gemini API through our utility function
+      const aiText = await getFinancialAdvice(aiInput, financialData);
       
       setAiResponse(aiText);
       setAiInput('');
@@ -201,7 +168,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userGoal }) => {
     
     try {
       // Define current spending data
-      const spendingData = {
+      const financialData: FinancialData = {
         income: 5200,
         expenses: {
           dining: 850,
@@ -211,47 +178,13 @@ const Dashboard: React.FC<DashboardProps> = ({ userGoal }) => {
           bills: 640,
           other: 300
         },
-        savings: 1200
+        savings: 1200,
+        goal: userGoal,
+        riskProfile: 'Moderate'
       };
       
-      // Call Gemini API
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-goog-api-key': 'AIzaSyB2PMyOZzGVCinCR4d6TuDOD9ux1j2plXY'
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: `You are an AI financial advisor. The user has the following financial data:\n\n` +
-                        `- Monthly income: $${spendingData.income}\n` +
-                        `- Monthly expenses: $${spendingData.expenses.dining + spendingData.expenses.transport + 
-                          spendingData.expenses.shopping + spendingData.expenses.entertainment + 
-                          spendingData.expenses.bills + spendingData.expenses.other} ` +
-                        `(Dining: $${spendingData.expenses.dining}, Transport: $${spendingData.expenses.transport}, ` +
-                        `Shopping: $${spendingData.expenses.shopping}, Entertainment: $${spendingData.expenses.entertainment}, ` +
-                        `Bills: $${spendingData.expenses.bills}, Other: $${spendingData.expenses.other})\n` +
-                        `- Savings goal: ${userGoal.description || 'Emergency Fund'} - $${userGoal.amount?.toLocaleString() || '5,000'}\n` +
-                        `- Available to invest: $1,200\n` +
-                        `- Risk profile: Moderate\n\n` +
-                        `Based on this information, provide personalized financial advice for this question: ${randomQuery}\n\n` +
-                        `Keep your response concise and actionable, with specific numbers and recommendations.`
-                }
-              ]
-            }
-          ]
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      const aiText = data.candidates[0].content.parts[0].text;
+      // Call Gemini API through our utility function
+      const aiText = await getFinancialAdvice(randomQuery, financialData);
       
       // Determine if this is an investment-related query
       const isInvestmentQuery = randomQuery.toLowerCase().includes('invest') || 
