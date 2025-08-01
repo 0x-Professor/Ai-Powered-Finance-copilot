@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faWallet, faCreditCard, faPiggyBank, faChartLine, faExclamationTriangle,
@@ -22,7 +22,11 @@ interface DashboardProps {
   };
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ userGoal }) => {
+interface DashboardHandle {
+  startListening: () => void;
+}
+
+const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref) => {
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [aiInput, setAiInput] = useState('');
   const [aiResponse, setAiResponse] = useState<string | null>(null);
@@ -278,6 +282,11 @@ const Dashboard: React.FC<DashboardProps> = ({ userGoal }) => {
       setIsLoading(false);
     }
   };
+  
+  // Expose methods to parent component
+  useImperativeHandle(ref, () => ({
+    startListening
+  }));
 
   const stopListening = () => {
     // Implementation would go here
@@ -546,5 +555,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userGoal }) => {
     </div>
   );
 };
+
+});
 
 export default Dashboard;
