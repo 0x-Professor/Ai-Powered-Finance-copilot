@@ -3,8 +3,7 @@ import "./globals.css";
 
 // Font Awesome
 import { config } from '@fortawesome/fontawesome-svg-core';
-import '@fortawesome/fontawesome-svg-core/styles.css';
-config.autoAddCss = false;
+config.autoAddCss = true; // Let FontAwesome handle CSS automatically
 
 export const metadata: Metadata = {
   title: "FinanceAI Co-Pilot - AI-Powered Personal Finance Assistant",
@@ -33,12 +32,6 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" 
           rel="stylesheet" 
         />
-        <link 
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
-          rel="stylesheet" 
-          crossOrigin="anonymous"
-        />
-        <meta name="theme-color" content="#0ea5e9" />
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className="font-sans bg-gray-50 min-h-screen antialiased">
