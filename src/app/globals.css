@@ -1,10 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@reference "tailwindcss";
 
 :root {
-  --font-inter: 'Inter', sans-serif;
+  --font-inter: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   --gradient-primary: linear-gradient(135deg, #0ea5e9 0%, #6d28d9 100%);
   --gradient-secondary: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
   --gradient-success: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
@@ -12,113 +11,275 @@
   --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
 }
 
-body {
-  font-family: var(--font-inter);
-  @apply bg-white;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* Custom styles */
-.gradient-bg { background: var(--gradient-primary); }
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-inter);
+  @apply bg-gray-50 text-gray-900 antialiased;
+  line-height: 1.6;
+}
+
+/* Custom Gradient Backgrounds */
+.gradient-bg { 
+  background: var(--gradient-primary); 
+  background-attachment: fixed;
+}
 .gradient-secondary { background: var(--gradient-secondary); }
 .gradient-success { background: var(--gradient-success); }
 .gradient-warning { background: var(--gradient-warning); }
 .gradient-danger { background: var(--gradient-danger); }
 
-/* Card styles */
+/* Enhanced Card Styles */
 .card {
-  @apply bg-white rounded-xl shadow-card p-5 transition-all duration-300;
+  @apply bg-white rounded-xl shadow-lg p-6 transition-all duration-300 border border-gray-100;
+  backdrop-filter: blur(10px);
 }
 
 .card-hover { 
-  @apply transition-all duration-300; 
+  @apply transition-all duration-300 cursor-pointer; 
 }
 
 .card-hover:hover { 
-  @apply transform -translate-y-1 shadow-card-hover; 
+  @apply transform -translate-y-1 shadow-xl scale-[1.02] border-primary-200; 
 }
 
-/* Animation styles */
+/* Enhanced Animation Styles */
 .pulse-animation { 
   animation: pulse 2s infinite; 
 }
 
 @keyframes pulse { 
-  0%, 100% { opacity: 1; } 
-  50% { opacity: 0.7; } 
+  0%, 100% { opacity: 1; transform: scale(1); } 
+  50% { opacity: 0.8; transform: scale(1.05); } 
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in-right {
+  animation: slideInRight 0.8s ease-out;
+}
+
+/* Voice Active State */
 .voice-active { 
   background: var(--gradient-secondary);
-  @apply shadow-lg;
+  @apply shadow-lg animate-pulse;
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
 }
 
+/* Progress Bar Enhancements */
 .progress-bar { 
-  @apply transition-all duration-500 ease-in-out; 
+  @apply transition-all duration-700 ease-in-out relative overflow-hidden; 
 }
 
-/* Button styles */
+.progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Enhanced Button Styles */
 .btn {
-  @apply px-4 py-2 rounded-lg font-medium transition-all duration-300 shadow-button;
+  @apply px-6 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg relative overflow-hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+  z-index: -1;
+}
+
+.btn:hover::before {
+  left: 100%;
 }
 
 .btn:hover {
-  @apply shadow-button-hover transform -translate-y-0.5;
+  @apply shadow-xl transform -translate-y-1 scale-105;
+}
+
+.btn:active {
+  @apply transform translate-y-0 scale-100;
 }
 
 .btn-primary {
-  @apply bg-primary-600 text-white hover:bg-primary-700;
+  @apply bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800;
 }
 
 .btn-secondary {
-  @apply bg-secondary-600 text-white hover:bg-secondary-700;
+  @apply bg-gradient-to-r from-secondary-600 to-secondary-700 text-white hover:from-secondary-700 hover:to-secondary-800;
 }
 
 .btn-success {
-  @apply bg-success-600 text-white hover:bg-success-700;
+  @apply bg-gradient-to-r from-success-600 to-success-700 text-white hover:from-success-700 hover:to-success-800;
 }
 
 .btn-warning {
-  @apply bg-warning-600 text-white hover:bg-warning-700;
+  @apply bg-gradient-to-r from-warning-600 to-warning-700 text-white hover:from-warning-700 hover:to-warning-800;
 }
 
 .btn-danger {
-  @apply bg-danger-600 text-white hover:bg-danger-700;
+  @apply bg-gradient-to-r from-danger-600 to-danger-700 text-white hover:from-danger-700 hover:to-danger-800;
 }
 
-.btn-outline {
-  @apply border-2 bg-transparent;
+.btn-lg {
+  @apply px-8 py-4 text-lg;
 }
 
-.btn-outline-primary {
-  @apply border-primary-600 text-primary-600 hover:bg-primary-50;
-}
-
-/* Input styles */
+/* Enhanced Input Styles */
 .input {
-  @apply px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all duration-300;
+  @apply px-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-4 focus:ring-primary-200 focus:border-primary-500 outline-none transition-all duration-300 bg-white;
 }
 
-/* Badge styles */
+.input:focus {
+  @apply shadow-lg transform scale-[1.02];
+}
+
+/* Enhanced Badge Styles */
 .badge {
-  @apply px-2 py-1 text-xs font-semibold rounded-full;
+  @apply px-3 py-1 text-xs font-bold rounded-full shadow-sm;
 }
 
 .badge-primary {
-  @apply bg-primary-100 text-primary-800;
+  @apply bg-gradient-to-r from-primary-100 to-primary-200 text-primary-800 border border-primary-300;
 }
 
 .badge-secondary {
-  @apply bg-secondary-100 text-secondary-800;
+  @apply bg-gradient-to-r from-secondary-100 to-secondary-200 text-secondary-800 border border-secondary-300;
 }
 
 .badge-success {
-  @apply bg-success-100 text-success-800;
+  @apply bg-gradient-to-r from-success-100 to-success-200 text-success-800 border border-success-300;
 }
 
 .badge-warning {
-  @apply bg-warning-100 text-warning-800;
+  @apply bg-gradient-to-r from-warning-100 to-warning-200 text-warning-800 border border-warning-300;
 }
 
 .badge-danger {
-  @apply bg-danger-100 text-danger-800;
+  @apply bg-gradient-to-r from-danger-100 to-danger-200 text-danger-800 border border-danger-300;
+}
+
+/* Loading Spinner */
+.spinner {
+  @apply inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin;
+}
+
+/* Goal Option Styles */
+.goal-option {
+  @apply transition-all duration-300 hover:shadow-lg hover:scale-105;
+}
+
+.goal-option:hover {
+  @apply bg-gradient-to-br from-secondary-50 to-primary-50;
+}
+
+/* Chart Container */
+.chart-container {
+  @apply bg-white rounded-lg p-4 shadow-inner;
+}
+
+/* Notification Styles */
+.notification {
+  @apply fixed top-4 right-4 bg-white rounded-lg shadow-xl p-4 border-l-4 z-50 transition-all duration-300;
+  animation: slideInRight 0.5s ease-out;
+}
+
+.notification-success {
+  @apply border-success-500 bg-success-50;
+}
+
+.notification-error {
+  @apply border-danger-500 bg-danger-50;
+}
+
+.notification-info {
+  @apply border-primary-500 bg-primary-50;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 rounded-full hover:bg-gray-500;
+}
+
+/* Mobile Responsive Enhancements */
+@media (max-width: 768px) {
+  .card {
+    @apply p-4;
+  }
+  
+  .btn {
+    @apply px-4 py-2 text-sm;
+  }
+  
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .card {
+    @apply bg-gray-800 border-gray-700 text-white;
+  }
+  
+  .input {
+    @apply bg-gray-800 border-gray-600 text-white;
+  }
 }
