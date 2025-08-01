@@ -511,104 +511,119 @@ const Dashboard = forwardRef<DashboardHandle, DashboardProps>(({ userGoal }, ref
       </div>
 
       {/* Gamified Savings Challenges */}
-      <div className="mt-8 bg-white rounded-xl shadow-lg p-6 card-hover">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold">Savings Challenges</h3>
-          <div className="flex items-center space-x-2">
-            <FontAwesomeIcon icon={faTrophy} className="text-yellow-500" />
-            <span className="font-semibold text-yellow-600">{points} points</span>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="card card-hover border-l-4 border-warning-500">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-700 flex items-center">
+              <FontAwesomeIcon icon={faTrophy} className="text-warning-500 mr-2" />
+              Gamified Savings Challenges
+            </h3>
+            <div className="flex items-center space-x-1 bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-xs font-semibold">
+              <FontAwesomeIcon icon={faStar} className="text-warning-500" />
+              <span>{points} points</span>
+            </div>
+          </div>
+          
+          <div className="space-y-6">
+            <div className="p-4 bg-gray-50 rounded-xl hover:shadow-md transition-all duration-300">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 rounded-full bg-warning-100 flex items-center justify-center mr-3">
+                    <FontAwesomeIcon icon={faCoffee} className="text-warning-600" />
+                  </div>
+                  <span className="font-medium text-gray-800">Coffee Break Challenge</span>
+                </div>
+                <button 
+                  onClick={() => completeChallenge(1)}
+                  className="btn-outline-success text-xs px-3 py-1 rounded-full">
+                  <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
+                  Mark Complete
+                </button>
+              </div>
+              <p className="text-sm text-gray-600 mb-2">Skip buying coffee for a week and save $25</p>
+              <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                <div className="bg-warning-500 h-2.5 rounded-full progress-bar" style={{ width: '60%' }}></div>
+              </div>
+              <div className="flex justify-between text-xs mt-2">
+                <span className="badge badge-warning">3/5 days</span>
+                <span className="badge badge-success">$15 saved</span>
+              </div>
+            </div>
+            
+            <div className="p-4 bg-gray-50 rounded-xl hover:shadow-md transition-all duration-300">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 rounded-full bg-secondary-100 flex items-center justify-center mr-3">
+                    <FontAwesomeIcon icon={faUtensils} className="text-secondary-600" />
+                  </div>
+                  <span className="font-medium text-gray-800">Meal Prep Master</span>
+                </div>
+                <button 
+                  onClick={() => completeChallenge(2)}
+                  className="btn-outline-success text-xs px-3 py-1 rounded-full">
+                  <FontAwesomeIcon icon={faCheckCircle} className="mr-1" />
+                  Mark Complete
+                </button>
+              </div>
+              <p className="text-sm text-gray-600 mb-2">Prepare meals at home for 2 weeks and save $120</p>
+              <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                <div className="bg-secondary-500 h-2.5 rounded-full progress-bar" style={{ width: '30%' }}></div>
+              </div>
+              <div className="flex justify-between text-xs mt-2">
+                <span className="badge badge-secondary">4/14 days</span>
+                <span className="badge badge-success">$35 saved</span>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Challenge 1 */}
-          <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 hover:border-purple-300 transition-colors">
-            <div className="text-center">
-              <FontAwesomeIcon icon={faCoffee} className="text-4xl text-yellow-700 mb-3" />
-              <h4 className="font-semibold mb-2">Coffee Challenge</h4>
-              <p className="text-gray-600 text-sm mb-3">Skip 5 coffee purchases this week</p>
-              <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
-                <div className="bg-purple-500 h-2 rounded-full progress-bar" style={{ width: '60%' }}></div>
-              </div>
-              <p className="text-sm text-purple-600">3/5 completed</p>
-              <button 
-                onClick={() => completeChallenge(1)} 
-                className="mt-3 bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-              >
-                Mark Complete
-              </button>
-            </div>
+        
+        {/* Quick Actions */}
+        <div className="card card-hover">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-700 flex items-center">
+              <FontAwesomeIcon icon={faBolt} className="text-primary-500 mr-2" />
+              Quick Actions
+            </h3>
           </div>
-
-          {/* Challenge 2 */}
-          <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 hover:border-green-300 transition-colors">
-            <div className="text-center">
-              <FontAwesomeIcon icon={faUtensils} className="text-4xl text-red-500 mb-3" />
-              <h4 className="font-semibold mb-2">Cook at Home</h4>
-              <p className="text-gray-600 text-sm mb-3">Cook dinner 4 times this week</p>
-              <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
-                <div className="bg-green-500 h-2 rounded-full progress-bar" style={{ width: '25%' }}></div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <button 
+              onClick={connectBank}
+              className="flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md">
+              <div className="w-12 h-12 rounded-full gradient-bg flex items-center justify-center mb-3 shadow-md">
+                <FontAwesomeIcon icon={faUniversity} className="text-white" />
               </div>
-              <p className="text-sm text-green-600">1/4 completed</p>
-              <button 
-                onClick={() => completeChallenge(2)} 
-                className="mt-3 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-              >
-                Mark Complete
-              </button>
-            </div>
-          </div>
-
-          {/* Challenge 3 */}
-          <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
-            <div className="text-center">
-              <FontAwesomeIcon icon={faDollarSign} className="text-4xl text-blue-500 mb-3" />
-              <h4 className="font-semibold mb-2">Save $200</h4>
-              <p className="text-gray-600 text-sm mb-3">Put aside $200 this month</p>
-              <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
-                <div className="bg-blue-500 h-2 rounded-full progress-bar" style={{ width: '75%' }}></div>
+              <span className="text-sm font-medium text-gray-800">Connect Bank</span>
+            </button>
+            
+            <button 
+              onClick={setBudget}
+              className="flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md">
+              <div className="w-12 h-12 rounded-full gradient-success flex items-center justify-center mb-3 shadow-md">
+                <FontAwesomeIcon icon={faCalculator} className="text-white" />
               </div>
-              <p className="text-sm text-blue-600">$150/200 saved</p>
-              <button 
-                onClick={() => completeChallenge(3)} 
-                className="mt-3 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-              >
-                Add $50
-              </button>
-            </div>
+              <span className="text-sm font-medium text-gray-800">Set Budget</span>
+            </button>
+            
+            <button 
+              onClick={investmentAdvice}
+              className="flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md">
+              <div className="w-12 h-12 rounded-full gradient-secondary flex items-center justify-center mb-3 shadow-md">
+                <FontAwesomeIcon icon={faChartPie} className="text-white" />
+              </div>
+              <span className="text-sm font-medium text-gray-800">Investment Tips</span>
+            </button>
+            
+            <button 
+              onClick={exportData}
+              className="flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 p-4 rounded-xl transition-all duration-300 hover:shadow-md">
+              <div className="w-12 h-12 rounded-full gradient-warning flex items-center justify-center mb-3 shadow-md">
+                <FontAwesomeIcon icon={faDownload} className="text-white" />
+              </div>
+              <span className="text-sm font-medium text-gray-800">Export Data</span>
+            </button>
           </div>
         </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <button 
-          onClick={connectBank} 
-          className="bg-white rounded-xl shadow-lg p-6 card-hover text-center"
-        >
-          <FontAwesomeIcon icon={faUniversity} className="text-3xl text-blue-500 mb-3" />
-          <p className="font-semibold">Connect Bank</p>
-        </button>
-        <button 
-          onClick={setBudget} 
-          className="bg-white rounded-xl shadow-lg p-6 card-hover text-center"
-        >
-          <FontAwesomeIcon icon={faCalculator} className="text-3xl text-green-500 mb-3" />
-          <p className="font-semibold">Set Budget</p>
-        </button>
-        <button 
-          onClick={investmentAdvice} 
-          className="bg-white rounded-xl shadow-lg p-6 card-hover text-center"
-        >
-          <FontAwesomeIcon icon={faChartPie} className="text-3xl text-purple-500 mb-3" />
-          <p className="font-semibold">Investment Tips</p>
-        </button>
-        <button 
-          onClick={exportData} 
-          className="bg-white rounded-xl shadow-lg p-6 card-hover text-center"
-        >
-          <FontAwesomeIcon icon={faDownload} className="text-3xl text-gray-500 mb-3" />
-          <p className="font-semibold">Export Data</p>
-        </button>
       </div>
     </div>
   );

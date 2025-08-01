@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faRocket, faBullseye, faBrain, faUniversity, 
-  faShieldAlt, faCar, faHome, faChartLine 
+  faShieldAlt, faCar, faHome, faChartLine,
+  faArrowLeft, faArrowRight, faLightbulb, faCalendarAlt,
+  faClock, faTachometerAlt
 } from '@fortawesome/free-solid-svg-icons';
 import { generateFinancialAnalysis, FinancialData } from '../utils/geminiApi';
 
@@ -138,7 +140,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
       {/* Step 1: Welcome & Bank Connection */}
       <div id="step1" className={`bg-white rounded-xl shadow-lg p-8 card-hover ${currentStep !== 1 ? 'hidden' : ''}`}>
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
             <FontAwesomeIcon icon={faRocket} className="text-white text-3xl" />
           </div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome to FinanceAI Co-Pilot!</h2>
@@ -146,7 +148,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
         </div>
         
         <div className="max-w-md mx-auto">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 shadow-sm">
             <div className="flex items-center">
               <FontAwesomeIcon icon={faShieldAlt} className="text-blue-500 mr-3" />
               <div>
@@ -159,7 +161,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
           <button 
             onClick={connectBankStep} 
             disabled={isConnecting}
-            className={`w-full bg-gradient-to-r ${isConnected ? 'from-green-500 to-green-600' : 'from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600'} text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-105`}
+            className={`w-full btn ${isConnected ? 'btn-success' : 'btn-primary'} transition-all duration-300 transform hover:scale-105`}
           >
             {isConnecting ? (
               <>
@@ -188,7 +190,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
       {/* Step 2: Goal Setting */}
       <div id="step2" className={`bg-white rounded-xl shadow-lg p-8 card-hover ${currentStep !== 2 ? 'hidden' : ''}`}>
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
             <FontAwesomeIcon icon={faBullseye} className="text-white text-3xl" />
           </div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">What's Your Financial Goal?</h2>
@@ -199,23 +201,23 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <button 
               onClick={() => selectGoal('car')} 
-              className={`goal-option p-4 border-2 ${userGoal.description === 'Save $10k for a car' ? 'border-purple-400 bg-purple-50' : 'border-gray-200'} rounded-lg hover:border-purple-400 transition-colors`}
+              className={`goal-option p-4 border-2 ${userGoal.description === 'Save $10k for a car' ? 'border-secondary-400 bg-secondary-50' : 'border-gray-200'} rounded-lg hover:border-secondary-400 transition-colors`}
             >
-              <FontAwesomeIcon icon={faCar} className="text-3xl text-purple-500 mb-2" />
+              <FontAwesomeIcon icon={faCar} className="text-3xl text-secondary-500 mb-2" />
               <p className="font-semibold">New Car</p>
             </button>
             <button 
               onClick={() => selectGoal('house')} 
-              className={`goal-option p-4 border-2 ${userGoal.description === 'Save $50k for house down payment' ? 'border-purple-400 bg-purple-50' : 'border-gray-200'} rounded-lg hover:border-purple-400 transition-colors`}
+              className={`goal-option p-4 border-2 ${userGoal.description === 'Save $50k for house down payment' ? 'border-secondary-400 bg-secondary-50' : 'border-gray-200'} rounded-lg hover:border-secondary-400 transition-colors`}
             >
-              <FontAwesomeIcon icon={faHome} className="text-3xl text-purple-500 mb-2" />
+              <FontAwesomeIcon icon={faHome} className="text-3xl text-secondary-500 mb-2" />
               <p className="font-semibold">House Down Payment</p>
             </button>
             <button 
               onClick={() => selectGoal('emergency')} 
-              className={`goal-option p-4 border-2 ${userGoal.description === 'Build $5k emergency fund' ? 'border-purple-400 bg-purple-50' : 'border-gray-200'} rounded-lg hover:border-purple-400 transition-colors`}
+              className={`goal-option p-4 border-2 ${userGoal.description === 'Build $5k emergency fund' ? 'border-secondary-400 bg-secondary-50' : 'border-gray-200'} rounded-lg hover:border-secondary-400 transition-colors`}
             >
-              <FontAwesomeIcon icon={faShieldAlt} className="text-3xl text-purple-500 mb-2" />
+              <FontAwesomeIcon icon={faShieldAlt} className="text-3xl text-secondary-500 mb-2" />
               <p className="font-semibold">Emergency Fund</p>
             </button>
           </div>
@@ -228,7 +230,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
                 value={userGoal.description} 
                 onChange={(e) => setUserGoal({...userGoal, description: e.target.value})}
                 placeholder="e.g., Save $10k for a car" 
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500"
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -239,7 +241,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
                   value={userGoal.amount || ''} 
                   onChange={(e) => setUserGoal({...userGoal, amount: Number(e.target.value)})}
                   placeholder="10000" 
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500"
                 />
               </div>
               <div>
@@ -248,14 +250,14 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
                   type="date" 
                   value={userGoal.date} 
                   onChange={(e) => setUserGoal({...userGoal, date: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500"
                 />
               </div>
             </div>
             <button 
               onClick={analyzeGoal} 
               disabled={!userGoal.description || !userGoal.amount || !userGoal.date}
-              className="w-full bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-primary-500 to-secondary-500 hover:from-primary-600 hover:to-secondary-600 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FontAwesomeIcon icon={faChartLine} className="mr-2" />
               Analyze My Goal
@@ -267,7 +269,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
       {/* Step 3: AI Analysis & Plan */}
       <div id="step3" className={`bg-white rounded-xl shadow-lg p-8 card-hover ${currentStep !== 3 ? 'hidden' : ''}`}>
         <div className="text-center mb-8">
-          <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-md">
             <FontAwesomeIcon icon={faBrain} className="text-white text-3xl" />
           </div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">AI Analysis Complete!</h2>
@@ -278,7 +280,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
           {isAnalyzing ? (
             <div className="text-center py-8">
               <div className="w-16 h-16 mx-auto mb-4">
-                <FontAwesomeIcon icon={faBrain} className="text-purple-500 text-4xl pulse-animation" />
+                <FontAwesomeIcon icon={faBrain} className="text-secondary-500 text-4xl pulse-animation" />
               </div>
               <p className="text-gray-600">Analyzing your financial data...</p>
             </div>
@@ -294,7 +296,7 @@ const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ onDashboardLaunch }) =>
         <div className="text-center mt-8">
           <button 
             onClick={startDashboard} 
-            className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-4 px-8 rounded-lg transition-all duration-300"
+            className="btn btn-primary btn-lg transition-all duration-300"
           >
             <FontAwesomeIcon icon={faRocket} className="mr-2" />
             Launch My Dashboard
